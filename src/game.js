@@ -8,6 +8,7 @@ if (!core) throw new Error('PulseCore failed to load before game.js');
 const {
   clamp,
   circlesOverlap,
+  steerTowardWithSeparation,
   carryMultiplier,
   carrySpeedFactor,
   bankReward,
