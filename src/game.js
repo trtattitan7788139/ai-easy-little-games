@@ -107,10 +107,12 @@ function cacheDom() {
   const ids = [
     'gameCanvas', 'menuScreen', 'startButton', 'tutorialButton', 'howButton', 'howScreen', 'howCloseButton', 'howTutorialButton',
     'hud', 'abilityRack', 'hullValue', 'timerValue', 'cargoValue', 'multiplierValue', 'bankedValue', 'scoreValue',
-    'dashFill', 'dashLabel', 'pulseFill', 'pulseLabel', 'tutorialPanel', 'tutorialStep', 'tutorialText', 'tutorialProgress', 'tutorialFinishButton',
+    'dashFill', 'dashLabel', 'dashImpactLabel', 'pulseFill', 'pulseLabel', 'tutorialPanel', 'tutorialStep', 'tutorialText', 'tutorialProgress', 'tutorialFinishButton',
     'upgradeScreen', 'upgradeChoices', 'pauseScreen', 'resumeButton', 'pauseRestartButton', 'pauseMenuButton',
     'endScreen', 'endKicker', 'endTitle', 'endSummary', 'finalScore', 'finalBanked', 'bestScore', 'menuBestBanked',
     'restartButton', 'menuButton', 'pauseButton', 'soundButton',
+    'mobileControls', 'mobileUpButton', 'mobileLeftButton', 'mobileRightButton', 'mobileDownButton',
+    'mobileDashButton', 'mobilePulseButton', 'mobileDashLabel', 'mobilePulseLabel', 'mobileDashImpactLabel',
   ];
   for (const id of ids) {
     dom[id] = document.getElementById(id);
@@ -144,6 +146,13 @@ function bindUi() {
   document.addEventListener('visibilitychange', () => {
     if (document.hidden && (state.mode === 'playing' || state.mode === 'tutorial')) pauseGame();
   });
+
+  bindTouchHold(dom.mobileUpButton, 'ArrowUp');
+  bindTouchHold(dom.mobileLeftButton, 'ArrowLeft');
+  bindTouchHold(dom.mobileRightButton, 'ArrowRight');
+  bindTouchHold(dom.mobileDownButton, 'ArrowDown');
+  bindTouchAction(dom.mobileDashButton, tryDash);
+  bindTouchAction(dom.mobilePulseButton, tryPulse);
 }
 
 function onKeyDown(event) {
@@ -193,7 +202,7 @@ function startMission() {
   resetRun('playing');
   state.player.x = RELAY.x;
   state.player.y = RELAY.y + 145;
-  for (let i = 0; i < 12; i += 1) spawnCell();
+  for (let i = 0; i < 9; i += 1) spawnCell();
   spawnBurst(RELAY.x, RELAY.y, '#66efff', 18, 120);
   playTone(330, 0.09, 'sine', 0.035);
   syncUiState();
