@@ -12,6 +12,7 @@
     Object.freeze({ id: 'phase-cooling', name: '相位冷卻', icon: '⌁', description: '衝刺冷卻時間 -15%（最低 1.4 秒）。' }),
     Object.freeze({ id: 'wide-pulse', name: '廣域脈衝', icon: '◉', description: '脈衝範圍 +22%。' }),
     Object.freeze({ id: 'capacitor', name: '高效電容', icon: 'ϟ', description: '脈衝充能速度 +20%。' }),
+    Object.freeze({ id: 'dash-impact', name: '衝刺撞擊', icon: '✦', description: '解鎖衝刺攻擊：撞擊敵人可直接擊破，每隻 +4 分。' }),
   ]);
 
   function clamp(value, min, max) {
@@ -114,6 +115,9 @@
       dashMultiplier: 2.5,
       pulseRadius: 145,
       pulseGain: 16,
+      dashImpactLevel: 0,
+      dashImpactRadius: 0,
+      dashImpactScore: 0,
     };
   }
 
@@ -140,15 +144,32 @@
       case 'capacitor':
         next.pulseGain *= 1.2;
         break;
+      case 'dash-impact':
+        next.dashImpactLevel = (next.dashImpactLevel || 0) + 1;
+        next.dashImpactRadius = next.dashImpactLevel === 1 ? 18 : (next.dashImpactRadius || 18) + 12;
+        next.dashImpactScore = next.dashImpactLevel === 1 ? 4 : (next.dashImpactScore || 4) + 2;
+        break;
       default:
         return next;
     }
     return next;
   }
 
-  function pickUpgradeChoices(count, rng) {
+  function getUpgradePool(stats) {
+    const level = Math.max(0, Number(stats && stats.dashImpactLevel) || 0);
+    return UPGRADES.map((upgrade) => {
+      if (upgrade.id !== 'dash-impact' || level === 0) return upgrade;
+      return Object.freeze({
+        ...upgrade,
+        name: `衝刺撞擊 Lv.${level + 1}`,
+        description: `強化衝刺撞擊：爆破範圍 +12 px，擊破分數 +2（下一級每隻 +${(Number(stats.dashImpactScore) || 4) + 2} 分）。`,
+      });
+    });
+  }
+
+  function pickUpgradeChoices(count, rng, stats) {
     const random = typeof rng === 'function' ? rng : Math.random;
-    const pool = UPGRADES.slice();
+    const pool = getUpgradePool(stats).slice();
     const amount = clamp(Math.floor(count || 0), 0, pool.length);
     const chosen = [];
     for (let i = 0; i < amount; i += 1) {
@@ -170,6 +191,7 @@
     missionStatus,
     createBasePlayerStats,
     applyUpgrade,
+    getUpgradePool,
     pickUpgradeChoices,
   });
 });
