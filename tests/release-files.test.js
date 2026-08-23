@@ -46,3 +46,19 @@ test('enemy pursuit runtime applies separation steering to prevent stacking', ()
   assert.match(chasers, /steerTowardWithSeparation\(enemy, state\.player, state\.enemies/);
   assert.match(chargers, /steerTowardWithSeparation\(enemy, state\.player, state\.enemies/);
 });
+
+
+test('energy cells use the calmer v1.1 spawn cadence', () => {
+  const runtime = read('src/game-02.js');
+  assert.match(runtime, /CELL_SPAWN_MIN\s*=\s*0\.95/);
+  assert.match(runtime, /CELL_SPAWN_MAX\s*=\s*1\.35/);
+  assert.match(runtime, /CELL_DOUBLE_CHANCE\s*=\s*0\.08/);
+  assert.match(runtime, /MAX_NATURAL_CELLS\s*=\s*22/);
+});
+
+test('dash impact runtime distinguishes locked dash from unlocked attacks', () => {
+  const runtime = read('src/game-03.js');
+  assert.match(runtime, /dashImpactLevel\s*>\s*0/);
+  assert.match(runtime, /dashImpactRadius/);
+  assert.match(runtime, /dashImpactScore/);
+});
