@@ -23,9 +23,14 @@ test('release includes a one-click Windows launcher and license', () => {
 });
 
 test('runtime files contain no external web asset dependencies', () => {
-  for (const file of ['index.html', 'styles.css', 'src/game-core.js', 'src/game.js']) {
+  for (const file of ['index.html', 'styles.css', 'mobile-v112.css', 'src/game-core.js', 'src/game.js']) {
     assert.doesNotMatch(read(file), /https?:\/\//i, `${file} should remain fully local`);
   }
+});
+
+test('v1.1.2 mobile override stylesheet is included locally', () => {
+  assert.equal(fs.existsSync(path.join(root, 'mobile-v112.css')), true, 'mobile-v112.css should exist');
+  assert.match(read('index.html'), /href="mobile-v112\.css"/);
 });
 
 test('browser runtime is split into upload-safe local script segments', () => {

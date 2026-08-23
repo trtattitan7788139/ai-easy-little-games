@@ -50,14 +50,14 @@ function tryPulse() {
 }
 
 function inputVector() {
-  let x = 0;
-  let y = 0;
+  let x = mobileMove.x;
+  let y = mobileMove.y;
   if (keys.has('KeyA') || keys.has('ArrowLeft')) x -= 1;
   if (keys.has('KeyD') || keys.has('ArrowRight')) x += 1;
   if (keys.has('KeyW') || keys.has('ArrowUp')) y -= 1;
   if (keys.has('KeyS') || keys.has('ArrowDown')) y += 1;
-  if (x !== 0 || y !== 0) {
-    const length = Math.hypot(x, y);
+  const length = Math.hypot(x, y);
+  if (length > 1) {
     x /= length;
     y /= length;
   }

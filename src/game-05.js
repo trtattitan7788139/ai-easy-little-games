@@ -1,27 +1,57 @@
-function bindTouchHold(button, code) {
-  const pointers = new Set();
-  const press = (event) => {
-    event.preventDefault();
-    if (state.mode !== 'playing' && state.mode !== 'tutorial') return;
-    pointers.add(event.pointerId);
-    keys.add(code);
-    button.classList.add('is-pressed');
-    try { button.setPointerCapture(event.pointerId); } catch (_) {}
-  };
-  const release = (event) => {
-    pointers.delete(event.pointerId);
-    if (pointers.size === 0) {
-      keys.delete(code);
-      button.classList.remove('is-pressed');
-    }
-  };
-  button.addEventListener('pointerdown', press);
-  button.addEventListener('pointerup', release);
-  button.addEventListener('pointercancel', release);
-  button.addEventListener('lostpointercapture', release);
-  button.addEventListener('contextmenu', (event) => event.preventDefault());
+function resetMobileJoystick() {
+  mobileMove.x = 0;
+  mobileMove.y = 0;
+  if (dom.mobileJoystick) dom.mobileJoystick.classList.remove('is-active');
+  if (dom.mobileJoystickStick) dom.mobileJoystickStick.style.transform = 'translate3d(0px, 0px, 0)';
 }
 
+function bindJoystick(base, stick) {
+  let activePointer = null;
+  const deadzone = 9;
+
+  const update = (event) => {
+    if (event.pointerId !== activePointer) return;
+    const rect = base.getBoundingClientRect();
+    const dx = event.clientX - (rect.left + rect.width / 2);
+    const dy = event.clientY - (rect.top + rect.height / 2);
+    const distance = Math.hypot(dx, dy);
+    const maxRadius = Math.max(28, Math.min(rect.width, rect.height) * 0.34);
+    if (distance <= deadzone) {
+      mobileMove.x = 0;
+      mobileMove.y = 0;
+      stick.style.transform = 'translate3d(0px, 0px, 0)';
+      return;
+    }
+    const directionX = dx / distance;
+    const directionY = dy / distance;
+    const travel = Math.min(distance, maxRadius);
+    const strength = clamp((travel - deadzone) / (maxRadius - deadzone), 0, 1);
+    mobileMove.x = directionX * strength;
+    mobileMove.y = directionY * strength;
+    stick.style.transform = `translate3d(${(directionX * travel).toFixed(1)}px, ${(directionY * travel).toFixed(1)}px, 0)`;
+  };
+
+  const press = (event) => {
+    event.preventDefault();
+    if (activePointer !== null || (state.mode !== 'playing' && state.mode !== 'tutorial')) return;
+    activePointer = event.pointerId;
+    base.classList.add('is-active');
+    try { base.setPointerCapture(event.pointerId); } catch (_) {}
+    update(event);
+  };
+  const release = (event) => {
+    if (event.pointerId !== activePointer) return;
+    activePointer = null;
+    resetMobileJoystick();
+  };
+
+  base.addEventListener('pointerdown', press);
+  base.addEventListener('pointermove', update);
+  base.addEventListener('pointerup', release);
+  base.addEventListener('pointercancel', release);
+  base.addEventListener('lostpointercapture', release);
+  base.addEventListener('contextmenu', (event) => event.preventDefault());
+}
 function bindTouchAction(button, action) {
   button.addEventListener('pointerdown', (event) => {
     event.preventDefault();
@@ -160,7 +190,7 @@ function init() {
     startMission,
     startTutorial,
     showMenu,
-    version: '1.1.1',
+    version: '1.1.2',
   });
   requestAnimationFrame(frame);
 }

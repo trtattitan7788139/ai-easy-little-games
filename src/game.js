@@ -35,6 +35,7 @@ const TAU = Math.PI * 2;
 
 const dom = {};
 const keys = new Set();
+const mobileMove = { x: 0, y: 0 };
 let ctx;
 let lastFrame = performance.now();
 let audioContext = null;
@@ -111,7 +112,7 @@ function cacheDom() {
     'upgradeScreen', 'upgradeChoices', 'pauseScreen', 'resumeButton', 'pauseRestartButton', 'pauseMenuButton',
     'endScreen', 'endKicker', 'endTitle', 'endSummary', 'finalScore', 'finalBanked', 'bestScore', 'menuBestBanked',
     'restartButton', 'menuButton', 'pauseButton', 'soundButton',
-    'mobileControls', 'mobileUpButton', 'mobileLeftButton', 'mobileRightButton', 'mobileDownButton',
+    'mobileControls', 'mobileJoystick', 'mobileJoystickStick',
     'mobileDashButton', 'mobilePulseButton', 'mobileDashLabel', 'mobilePulseLabel', 'mobileDashImpactLabel',
   ];
   for (const id of ids) {
@@ -141,16 +142,14 @@ function bindUi() {
   window.addEventListener('keyup', onKeyUp);
   window.addEventListener('blur', () => {
     keys.clear();
+    resetMobileJoystick();
     if (state.mode === 'playing' || state.mode === 'tutorial') pauseGame();
   });
   document.addEventListener('visibilitychange', () => {
     if (document.hidden && (state.mode === 'playing' || state.mode === 'tutorial')) pauseGame();
   });
 
-  bindTouchHold(dom.mobileUpButton, 'ArrowUp');
-  bindTouchHold(dom.mobileLeftButton, 'ArrowLeft');
-  bindTouchHold(dom.mobileRightButton, 'ArrowRight');
-  bindTouchHold(dom.mobileDownButton, 'ArrowDown');
+  bindJoystick(dom.mobileJoystick, dom.mobileJoystickStick);
   bindTouchAction(dom.mobileDashButton, tryDash);
   bindTouchAction(dom.mobilePulseButton, tryPulse);
 }
@@ -176,6 +175,7 @@ function onKeyUp(event) {
 
 function resetRun(mode) {
   keys.clear();
+  resetMobileJoystick();
   state.mode = mode;
   state.elapsed = 0;
   state.score = 0;
@@ -221,6 +221,7 @@ function startTutorial() {
 
 function showMenu() {
   keys.clear();
+  resetMobileJoystick();
   state.mode = 'menu';
   state.cells = [];
   state.enemies = [];
@@ -249,6 +250,7 @@ function pauseGame() {
   pausedFrom = state.mode;
   state.mode = 'paused';
   keys.clear();
+  resetMobileJoystick();
   syncUiState();
 }
 
