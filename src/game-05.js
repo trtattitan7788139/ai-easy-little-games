@@ -1,3 +1,41 @@
+function bindTouchHold(button, code) {
+  const pointers = new Set();
+  const press = (event) => {
+    event.preventDefault();
+    if (state.mode !== 'playing' && state.mode !== 'tutorial') return;
+    pointers.add(event.pointerId);
+    keys.add(code);
+    button.classList.add('is-pressed');
+    try { button.setPointerCapture(event.pointerId); } catch (_) {}
+  };
+  const release = (event) => {
+    pointers.delete(event.pointerId);
+    if (pointers.size === 0) {
+      keys.delete(code);
+      button.classList.remove('is-pressed');
+    }
+  };
+  button.addEventListener('pointerdown', press);
+  button.addEventListener('pointerup', release);
+  button.addEventListener('pointercancel', release);
+  button.addEventListener('lostpointercapture', release);
+  button.addEventListener('contextmenu', (event) => event.preventDefault());
+}
+
+function bindTouchAction(button, action) {
+  button.addEventListener('pointerdown', (event) => {
+    event.preventDefault();
+    if (state.mode !== 'playing' && state.mode !== 'tutorial') return;
+    button.classList.add('is-pressed');
+    action();
+  });
+  const release = () => button.classList.remove('is-pressed');
+  button.addEventListener('pointerup', release);
+  button.addEventListener('pointercancel', release);
+  button.addEventListener('lostpointercapture', release);
+  button.addEventListener('contextmenu', (event) => event.preventDefault());
+}
+
 'use strict';
 
 function updateHud() {
@@ -19,9 +57,16 @@ function updateHud() {
 
   const dashProgress = p.dashCooldownRemaining <= 0 ? 1 : 1 - p.dashCooldownRemaining / p.dashCooldown;
   dom.dashFill.style.width = `${clamp(dashProgress, 0, 1) * 100}%`;
-  dom.dashLabel.textContent = p.dashCooldownRemaining <= 0 ? 'READY' : `${p.dashCooldownRemaining.toFixed(1)}s`;
+  const dashText = p.dashCooldownRemaining <= 0 ? 'READY' : `${p.dashCooldownRemaining.toFixed(1)}s`;
+  const impactText = p.dashImpactLevel > 0 ? `撞擊 Lv.${p.dashImpactLevel}` : '撞擊未解鎖';
+  dom.dashLabel.textContent = dashText;
+  dom.dashImpactLabel.textContent = impactText;
+  dom.mobileDashLabel.textContent = dashText;
+  dom.mobileDashImpactLabel.textContent = impactText;
   dom.pulseFill.style.width = `${clamp(state.pulse, 0, 100)}%`;
-  dom.pulseLabel.textContent = state.pulse >= 100 ? 'READY' : `${Math.floor(state.pulse)}%`;
+  const pulseText = state.pulse >= 100 ? 'READY' : `${Math.floor(state.pulse)}%`;
+  dom.pulseLabel.textContent = pulseText;
+  dom.mobilePulseLabel.textContent = pulseText;
 }
 
 function syncUiState() {
@@ -30,6 +75,7 @@ function syncUiState() {
   if (mode !== 'menu') dom.howScreen.classList.add('is-hidden');
   dom.hud.classList.toggle('is-hidden', mode === 'menu');
   dom.abilityRack.classList.toggle('is-hidden', mode === 'menu');
+  dom.mobileControls.classList.toggle('is-hidden', !['playing', 'tutorial'].includes(mode));
   dom.tutorialPanel.classList.toggle('is-hidden', !(mode === 'tutorial' || (mode === 'paused' && pausedFrom === 'tutorial')));
   dom.upgradeScreen.classList.toggle('is-hidden', mode !== 'upgrade');
   dom.pauseScreen.classList.toggle('is-hidden', mode !== 'paused');
@@ -88,6 +134,9 @@ function getSnapshot() {
       capacity: state.player.capacity,
       dashCooldownRemaining: state.player.dashCooldownRemaining,
       dashRemaining: state.player.dashRemaining,
+      dashImpactLevel: state.player.dashImpactLevel,
+      dashImpactRadius: state.player.dashImpactRadius,
+      dashImpactScore: state.player.dashImpactScore,
     },
   };
 }
@@ -111,7 +160,7 @@ function init() {
     startMission,
     startTutorial,
     showMenu,
-    version: '1.0.0',
+    version: '1.1.1',
   });
   requestAnimationFrame(frame);
 }
