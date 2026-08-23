@@ -3,11 +3,9 @@
 function updateCharger(enemy, dt) {
   enemy.phaseTimer -= dt;
   if (enemy.phase === 'seek') {
-    const dx = state.player.x - enemy.x;
-    const dy = state.player.y - enemy.y;
-    const distance = Math.max(1, Math.hypot(dx, dy));
-    enemy.x += (dx / distance) * enemy.speed * dt;
-    enemy.y += (dy / distance) * enemy.speed * dt;
+    const direction = steerTowardWithSeparation(enemy, state.player, state.enemies, 54, 1.2);
+    enemy.x += direction.x * enemy.speed * dt;
+    enemy.y += direction.y * enemy.speed * dt;
     if (enemy.phaseTimer <= 0) {
       enemy.phase = 'telegraph';
       enemy.phaseTimer = 0.72;
