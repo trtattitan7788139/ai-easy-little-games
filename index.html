@@ -69,6 +69,7 @@
             <div class="ability-key">SPACE</div>
             <div class="ability-info">
               <div class="ability-row"><span>DASH</span><span id="dashLabel">READY</span></div>
+              <div id="dashImpactLabel" class="ability-subrow">撞擊未解鎖</div>
               <div class="meter"><div id="dashFill" class="meter-fill dash-fill"></div></div>
             </div>
           </div>
@@ -201,8 +202,30 @@
       </section>
     </section>
 
+    <section id="mobileControls" class="mobile-controls is-hidden" aria-label="手機觸控操作">
+      <div class="mobile-dpad" aria-label="移動方向">
+        <button id="mobileUpButton" class="touch-button dpad-button dpad-up" type="button" aria-label="向上移動">▲</button>
+        <button id="mobileLeftButton" class="touch-button dpad-button dpad-left" type="button" aria-label="向左移動">◀</button>
+        <div class="dpad-core" aria-hidden="true">MOVE</div>
+        <button id="mobileRightButton" class="touch-button dpad-button dpad-right" type="button" aria-label="向右移動">▶</button>
+        <button id="mobileDownButton" class="touch-button dpad-button dpad-down" type="button" aria-label="向下移動">▼</button>
+      </div>
+      <div class="mobile-actions" aria-label="能力操作">
+        <button id="mobileDashButton" class="touch-button mobile-action dash-action" type="button">
+          <span class="mobile-action-name">衝刺</span>
+          <strong id="mobileDashLabel">READY</strong>
+          <small id="mobileDashImpactLabel">撞擊未解鎖</small>
+        </button>
+        <button id="mobilePulseButton" class="touch-button mobile-action pulse-action" type="button">
+          <span class="mobile-action-name">脈衝</span>
+          <strong id="mobilePulseLabel">0%</strong>
+          <small>充滿後可清除附近敵人</small>
+        </button>
+      </div>
+    </section>
+
     <footer class="footer-note">
-      <span>v1.0 // LOCAL SINGLE-PLAYER</span>
+      <span>v1.1.1 // DESKTOP + MOBILE</span>
       <span>所有進度只儲存在這台瀏覽器</span>
     </footer>
   </main>
