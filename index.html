@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#070b18">
+  <meta name="description" content="Pulse Courier: Neon Run — a short neon risk/reward survival game playable directly in your browser.">
+  <title>Pulse Courier: Neon Run</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="src/game-core.js"></script>
+  <script defer src="src/game.js"></script>
+  <script defer src="src/game-02.js"></script>
+  <script defer src="src/game-03.js"></script>
+  <script defer src="src/game-04.js"></script>
+  <script defer src="src/game-05.js"></script>
+</head>
+<body>
+  <main class="app-shell" aria-label="Pulse Courier: Neon Run">
+    <header class="topbar">
+      <div class="brand-mini" aria-label="遊戲名稱">
+        <span class="brand-mark">PC</span>
+        <span>Pulse Courier</span>
+      </div>
+      <div class="top-actions">
+        <button id="pauseButton" class="icon-button" type="button" aria-label="暫停遊戲" title="暫停（P / Esc）">Ⅱ</button>
+        <button id="soundButton" class="icon-button" type="button" aria-label="切換音效" title="音效開關">♪</button>
+      </div>
+    </header>
+
+    <section class="game-frame" aria-label="遊戲區域">
+      <canvas id="gameCanvas" width="960" height="600" aria-label="Pulse Courier 遊戲畫面">
+        你的瀏覽器不支援 Canvas，請使用最新版 Chrome、Edge 或 Firefox。
+      </canvas>
+
+      <section id="hud" class="hud is-hidden" aria-label="任務狀態">
+        <div class="hud-cluster hud-primary">
+          <div class="hud-card hull-card">
+            <span class="hud-label">HULL</span>
+            <strong id="hullValue" class="hud-value">◆ ◆ ◆</strong>
+          </div>
+          <div class="hud-card">
+            <span class="hud-label">TIME</span>
+            <strong id="timerValue" class="hud-value">04:00</strong>
+          </div>
+          <div class="hud-card">
+            <span class="hud-label">CARGO</span>
+            <strong id="cargoValue" class="hud-value">0 / 6</strong>
+          </div>
+          <div class="hud-card">
+            <span class="hud-label">RISK</span>
+            <strong id="multiplierValue" class="hud-value accent">×1.00</strong>
+          </div>
+        </div>
+
+        <div class="hud-cluster hud-secondary">
+          <div class="hud-card mission-card">
+            <span class="hud-label">BANKED</span>
+            <strong id="bankedValue" class="hud-value">0 / 60</strong>
+          </div>
+          <div class="hud-card">
+            <span class="hud-label">SCORE</span>
+            <strong id="scoreValue" class="hud-value">0</strong>
+          </div>
+        </div>
+      </section>
+
+        <div id="abilityRack" class="ability-rack is-hidden" aria-label="能力冷卻">
+          <div class="ability">
+            <div class="ability-key">SPACE</div>
+            <div class="ability-info">
+              <div class="ability-row"><span>DASH</span><span id="dashLabel">READY</span></div>
+              <div class="meter"><div id="dashFill" class="meter-fill dash-fill"></div></div>
+            </div>
+          </div>
+          <div class="ability">
+            <div class="ability-key">E</div>
+            <div class="ability-info">
+              <div class="ability-row"><span>PULSE</span><span id="pulseLabel">0%</span></div>
+              <div class="meter"><div id="pulseFill" class="meter-fill pulse-fill"></div></div>
+            </div>
+          </div>
+        </div>
+
+      <section id="tutorialPanel" class="tutorial-panel is-hidden" aria-live="polite">
+        <div class="tutorial-kicker">TRAINING LINK</div>
+        <div class="tutorial-heading-row">
+          <strong id="tutorialStep">步驟 1 / 6</strong>
+          <span id="tutorialProgress" class="tutorial-progress">○ ○ ○ ○ ○ ○</span>
+        </div>
+        <p id="tutorialText">使用 WASD 或方向鍵移動你的飛行器。</p>
+        <button id="tutorialFinishButton" class="tutorial-finish is-hidden" type="button">教學完成 → 開始正式任務</button>
+      </section>
+
+      <section id="menuScreen" class="overlay menu-screen" aria-label="主選單">
+        <div class="hero-card">
+          <div class="eyebrow">NEON FIELD // COURIER PROTOCOL</div>
+          <h1>PULSE<br><span>COURIER</span></h1>
+          <p class="hero-subtitle">NEON RUN</p>
+          <p class="hero-copy">把能量帶回中繼站。帶得越多，分數越高；但敵人也會更快找上你。</p>
+
+          <div class="menu-actions">
+            <button id="startButton" class="primary-button" type="button">
+              <span>開始任務</span><small>約 4 分鐘</small>
+            </button>
+            <button id="tutorialButton" class="secondary-button" type="button">
+              <span>新手教學</span><small>第一次玩建議先選這個</small>
+            </button>
+            <button id="howButton" class="ghost-button" type="button">玩法說明</button>
+          </div>
+
+          <div class="menu-stats" aria-label="本機紀錄">
+            <div><span>最佳分數</span><strong id="bestScore">0</strong></div>
+            <div><span>最高存入</span><strong id="menuBestBanked">0</strong></div>
+          </div>
+
+          <p class="control-hint"><kbd>WASD</kbd> 移動　<kbd>SPACE</kbd> 衝刺　<kbd>E</kbd> 脈衝　<kbd>P / ESC</kbd> 暫停</p>
+        </div>
+      </section>
+
+      <section id="howScreen" class="overlay is-hidden" aria-label="玩法說明">
+        <div class="modal-card how-card">
+          <div class="modal-header">
+            <div>
+              <span class="eyebrow">FIELD MANUAL</span>
+              <h2>第一次玩也能懂</h2>
+            </div>
+            <button id="howCloseButton" class="icon-button" type="button" aria-label="關閉玩法說明">×</button>
+          </div>
+          <div class="how-grid">
+            <article>
+              <span class="step-badge">01</span>
+              <h3>撿能量</h3>
+              <p>靠近場上的亮黃色能量球就會自動拾取。上限顯示在 CARGO。</p>
+            </article>
+            <article>
+              <span class="step-badge">02</span>
+              <h3>決定要不要貪</h3>
+              <p>身上能量越多，RISK 倍率越高，存回去時得分越多；但你會稍微變慢，敵人也更密集。</p>
+            </article>
+            <article>
+              <span class="step-badge">03</span>
+              <h3>回中央存入</h3>
+              <p>飛回中央的藍色 Relay。接觸後自動把身上能量存入，推進 60 點任務目標。</p>
+            </article>
+            <article>
+              <span class="step-badge">04</span>
+              <h3>保命工具</h3>
+              <p><kbd>SPACE</kbd> 衝刺可短暫無敵；Pulse 集滿後按 <kbd>E</kbd> 清除附近敵人。</p>
+            </article>
+            <article>
+              <span class="step-badge">05</span>
+              <h3>被撞會掉貨</h3>
+              <p>敵人撞到你會扣 1 格 HULL，並把一半貨物噴回場上。HULL 歸零就失敗。</p>
+            </article>
+            <article>
+              <span class="step-badge">06</span>
+              <h3>完成任務</h3>
+              <p>撐過 4 分鐘，並至少存入 60 能量即可成功。途中會出現升級三選一。</p>
+            </article>
+          </div>
+          <button id="howTutorialButton" class="primary-button compact" type="button">直接進入新手教學</button>
+        </div>
+      </section>
+
+      <section id="upgradeScreen" class="overlay is-hidden" aria-label="升級選擇">
+        <div class="modal-card upgrade-card">
+          <span class="eyebrow">RELAY SYNCHRONIZED</span>
+          <h2>選擇一項升級</h2>
+          <p>遊戲已暫停。選一個最適合你這局玩法的強化。</p>
+          <div id="upgradeChoices" class="upgrade-choices" role="group" aria-label="升級選項"></div>
+        </div>
+      </section>
+
+      <section id="pauseScreen" class="overlay is-hidden" aria-label="暫停選單">
+        <div class="modal-card pause-card">
+          <span class="eyebrow">LINK SUSPENDED</span>
+          <h2>已暫停</h2>
+          <p>敵人與計時都不會前進。</p>
+          <div class="stack-actions">
+            <button id="resumeButton" class="primary-button compact" type="button">繼續任務</button>
+            <button id="pauseRestartButton" class="secondary-button compact" type="button">重新開始</button>
+            <button id="pauseMenuButton" class="ghost-button" type="button">回主選單</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="endScreen" class="overlay is-hidden" aria-label="任務結算">
+        <div class="modal-card end-card">
+          <span id="endKicker" class="eyebrow">MISSION COMPLETE</span>
+          <h2 id="endTitle">任務完成</h2>
+          <p id="endSummary">中繼站已穩定，能量安全送達。</p>
+          <div class="end-stats">
+            <div><span>本局分數</span><strong id="finalScore">0</strong></div>
+            <div><span>存入能量</span><strong id="finalBanked">0</strong></div>
+          </div>
+          <div class="stack-actions">
+            <button id="restartButton" class="primary-button compact" type="button">再跑一次</button>
+            <button id="menuButton" class="secondary-button compact" type="button">回主選單</button>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <footer class="footer-note">
+      <span>v1.0 // LOCAL SINGLE-PLAYER</span>
+      <span>所有進度只儲存在這台瀏覽器</span>
+    </footer>
+  </main>
+</body>
+</html>
