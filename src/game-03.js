@@ -47,14 +47,23 @@ function updateTutorialDummies(dt) {
 
 function handleEnemyCollisions() {
   const p = state.player;
+  if (p.dashRemaining > 0 && p.dashImpactLevel > 0) {
+    const contact = state.enemies.find((enemy) => circlesOverlap(p, enemy));
+    if (contact) {
+      const destroyed = state.enemies.filter((enemy) => Math.hypot(enemy.x - contact.x, enemy.y - contact.y) <= p.dashImpactRadius + enemy.r);
+      const ids = new Set(destroyed.map((enemy) => enemy.id));
+      state.enemies = state.enemies.filter((enemy) => !ids.has(enemy.id));
+      state.score += destroyed.length * p.dashImpactScore;
+      for (const enemy of destroyed) spawnBurst(enemy.x, enemy.y, '#66efff', 12, 150);
+      state.screenShake = Math.max(state.screenShake, 5 + Math.min(5, destroyed.length));
+      playTone(245, 0.07, 'square', 0.026);
+    }
+  }
+
   const kept = [];
   for (const enemy of state.enemies) {
     if (circlesOverlap(p, enemy)) {
-      if (p.dashRemaining > 0) {
-        state.score += 2;
-        spawnBurst(enemy.x, enemy.y, '#66efff', 10, 130);
-        continue;
-      }
+      if (p.dashRemaining > 0) { kept.push(enemy); continue; }
       if (p.invulnerable <= 0) {
         damagePlayer(enemy);
         continue;
@@ -98,7 +107,7 @@ function checkUpgrade() {
 
 function renderUpgradeChoices() {
   dom.upgradeChoices.textContent = '';
-  for (const upgrade of pickUpgradeChoices(3)) {
+  for (const upgrade of pickUpgradeChoices(3, Math.random, state.player)) {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'upgrade-choice';
