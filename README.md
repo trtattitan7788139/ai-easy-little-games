@@ -4,7 +4,15 @@
 
 **v1.0 的目標很單純：4 分鐘內學會、玩懂，然後想再跑一局。**
 
-## 最快開始方式
+## 🎮 線上遊玩
+
+[▶ 立即遊玩 Pulse Courier: Neon Run](https://trtattitan7788139.github.io/ai-easy-little-games/)
+
+GitHub Pages 啟用後，直接點上面的連結就能在瀏覽器玩，不需要下載、Clone、安裝 npm、Python 或任何遊戲引擎。之後 `main` 分支更新時，線上版也會跟著重新部署。
+
+> GitHub Pages 第一次啟用：`Settings → Pages → Build and deployment → Deploy from a branch → main → /(root) → Save`。這個設定只需要做一次。
+
+## 離線遊玩
 
 ### Windows：推薦
 
