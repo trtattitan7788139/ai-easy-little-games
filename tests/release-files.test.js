@@ -39,3 +39,10 @@ test('browser runtime is split into upload-safe local script segments', () => {
     assert.doesNotMatch(read(file), /https?:\/\//i, `${file} should remain fully local`);
   }
 });
+
+test('enemy pursuit runtime applies separation steering to prevent stacking', () => {
+  const chasers = read('src/game-02.js');
+  const chargers = read('src/game-03.js');
+  assert.match(chasers, /steerTowardWithSeparation\(enemy, state\.player, state\.enemies/);
+  assert.match(chargers, /steerTowardWithSeparation\(enemy, state\.player, state\.enemies/);
+});
