@@ -166,6 +166,18 @@ async function main() {
     snapshot = await cdp.evaluate('window.PulseCourier.getSnapshot()');
     assert.equal(snapshot.mode, 'playing');
 
+    // Reproduce the late-game stacking case: many chasers begin at exactly the same point.
+    await cdp.evaluate("state.enemies = []; state.elapsed = 230; state.player.x = 480; state.player.y = 300; state.player.hull = 99; for (let i = 0; i < 12; i += 1) spawnEnemy('chaser', { x: 180, y: 300 });");
+    await sleep(650);
+    const crowd = await cdp.evaluate("state.enemies.filter((enemy) => enemy.type === 'chaser').map((enemy) => ({ x: enemy.x, y: enemy.y }))");
+    assert.ok(crowd.length >= 10, 'late-game crowd should remain populated during separation check');
+    const crowdY = crowd.map((enemy) => enemy.y);
+    assert.ok(Math.max(...crowdY) - Math.min(...crowdY) > 24, 'overlapping chasers should fan out instead of remaining stacked');
+    if (process.env.PULSE_CROWD_SCREENSHOT) {
+      const shot = await cdp.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
+      fs.writeFileSync(process.env.PULSE_CROWD_SCREENSHOT, Buffer.from(shot.data, 'base64'));
+    }
+
     // Walk a first-time player through the entire interactive tutorial.
     await cdp.evaluate('window.PulseCourier.showMenu()');
     await cdp.evaluate("document.getElementById('tutorialButton').click()");
