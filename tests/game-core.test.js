@@ -13,6 +13,7 @@ const {
   applyUpgrade,
   pickUpgradeChoices,
   steerTowardWithSeparation,
+  getUpgradePool,
   UPGRADES,
 } = require('../src/game-core.js');
 
@@ -113,6 +114,7 @@ test('upgrade choices use Traditional Chinese names and descriptions', () => {
       { id: 'phase-cooling', name: '相位冷卻', description: '衝刺冷卻時間 -15%（最低 1.4 秒）。' },
       { id: 'wide-pulse', name: '廣域脈衝', description: '脈衝範圍 +22%。' },
       { id: 'capacitor', name: '高效電容', description: '脈衝充能速度 +20%。' },
+      { id: 'dash-impact', name: '衝刺撞擊', description: '解鎖衝刺攻擊：撞擊敵人可直接擊破，每隻 +4 分。' },
     ],
   );
 });
@@ -134,4 +136,35 @@ test('enemy steering is direct pursuit when no neighbor is nearby', () => {
   const dir = steerTowardWithSeparation(enemy, { x: 100, y: 0 }, [enemy, { id: 2, x: 200, y: 200 }], 48, 1.35);
   assert.ok(Math.abs(dir.x - 1) < 1e-9);
   assert.ok(Math.abs(dir.y) < 1e-9);
+});
+
+
+test('dash impact starts locked and upgrades into a scaling ability line', () => {
+  const base = createBasePlayerStats();
+  assert.equal(base.dashImpactLevel, 0);
+  assert.equal(base.dashImpactRadius, 0);
+  assert.equal(base.dashImpactScore, 0);
+
+  const level1 = applyUpgrade(base, 'dash-impact');
+  assert.equal(level1.dashImpactLevel, 1);
+  assert.equal(level1.dashImpactRadius, 18);
+  assert.equal(level1.dashImpactScore, 4);
+
+  const level2 = applyUpgrade(level1, 'dash-impact');
+  assert.equal(level2.dashImpactLevel, 2);
+  assert.equal(level2.dashImpactRadius, 30);
+  assert.equal(level2.dashImpactScore, 6);
+});
+
+test('dash impact upgrade copy changes after the ability is unlocked', () => {
+  const base = createBasePlayerStats();
+  const locked = getUpgradePool(base).find((upgrade) => upgrade.id === 'dash-impact');
+  assert.equal(locked.name, '衝刺撞擊');
+  assert.match(locked.description, /解鎖衝刺攻擊/);
+
+  const level1 = applyUpgrade(base, 'dash-impact');
+  const upgrade = getUpgradePool(level1).find((choice) => choice.id === 'dash-impact');
+  assert.equal(upgrade.name, '衝刺撞擊 Lv.2');
+  assert.match(upgrade.description, /爆破範圍 \+12/);
+  assert.match(upgrade.description, /擊破分數 \+2/);
 });
