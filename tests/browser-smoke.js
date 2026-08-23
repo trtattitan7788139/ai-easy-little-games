@@ -131,6 +131,10 @@ async function main() {
       console.error('runtime diagnostics', JSON.stringify(diag, null, 2));
     }
     assert.equal(hasRuntime, true, 'game runtime API should be available');
+    const frameWidth = await cdp.evaluate("document.querySelector('.game-frame').getBoundingClientRect().width");
+    assert.ok(frameWidth > 1000, `desktop game frame should be enlarged, got ${frameWidth}px`);
+    const pageHeight = await cdp.evaluate('document.documentElement.scrollHeight');
+    assert.ok(pageHeight <= 802, `desktop shell should fit the 800px viewport without meaningful vertical scrolling, got ${pageHeight}px`);
     if (process.env.PULSE_MENU_SCREENSHOT) {
       const shot = await cdp.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
       fs.writeFileSync(process.env.PULSE_MENU_SCREENSHOT, Buffer.from(shot.data, 'base64'));
@@ -148,6 +152,17 @@ async function main() {
     await cdp.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'd', code: 'KeyD', windowsVirtualKeyCode: 68 });
     snapshot = await cdp.evaluate('window.PulseCourier.getSnapshot()');
     assert.ok(snapshot.player.x > startX + 5, 'holding D should move the courier right');
+
+    // Dash is defensive until the dash-impact upgrade is acquired.
+    const lockedDash = await cdp.evaluate("state.enemies = []; state.player.dashImpactLevel = 0; state.player.dashImpactRadius = 0; state.player.dashImpactScore = 0; state.player.dashRemaining = 0.15; spawnEnemy('chaser', { x: state.player.x, y: state.player.y }); handleEnemyCollisions(); ({ enemies: state.enemies.length, score: state.score })");
+    assert.equal(lockedDash.enemies, 1, 'locked dash should pass through without destroying an enemy');
+
+    const unlockedDash = await cdp.evaluate("state.enemies = []; state.score = 0; state.player = { ...state.player, ...applyUpgrade(state.player, 'dash-impact') }; state.player.dashRemaining = 0.15; spawnEnemy('chaser', { x: state.player.x, y: state.player.y }); spawnEnemy('chaser', { x: state.player.x + 20, y: state.player.y }); handleEnemyCollisions(); updateHud(); ({ enemies: state.enemies.length, score: state.score, level: state.player.dashImpactLevel, label: document.getElementById('dashImpactLabel').textContent })");
+    assert.equal(unlockedDash.enemies, 0, 'unlocked dash impact should destroy the contacted cluster');
+    assert.equal(unlockedDash.score, 8, 'level 1 dash impact should award 4 points per destroyed enemy');
+    assert.equal(unlockedDash.level, 1);
+    assert.match(unlockedDash.label, /撞擊 Lv\.1/);
+    await cdp.evaluate("state.enemies = []; state.score = 0; state.player.dashRemaining = 0; state.player.dashCooldownRemaining = 0");
 
     await cdp.send('Input.dispatchKeyEvent', { type: 'keyDown', key: ' ', code: 'Space', windowsVirtualKeyCode: 32 });
     await cdp.send('Input.dispatchKeyEvent', { type: 'keyUp', key: ' ', code: 'Space', windowsVirtualKeyCode: 32 });
@@ -228,6 +243,55 @@ async function main() {
     if (process.env.PULSE_SCREENSHOT) {
       const shot = await cdp.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
       fs.writeFileSync(process.env.PULSE_SCREENSHOT, Buffer.from(shot.data, 'base64'));
+    }
+
+    // Mobile regression: touch-only players must be able to move, dash, pulse, and reach pause actions.
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 3, mobile: true });
+    await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+    await sleep(120);
+    await cdp.evaluate('window.PulseCourier.showMenu()');
+    await cdp.evaluate("document.getElementById('startButton').click()");
+    await sleep(80);
+    const mobileControlsDisplay = await cdp.evaluate("getComputedStyle(document.getElementById('mobileControls')).display");
+    assert.notEqual(mobileControlsDisplay, 'none', 'touch controls should be visible during mobile gameplay');
+    let mobileSnapshot = await cdp.evaluate('window.PulseCourier.getSnapshot()');
+    const mobileStartX = mobileSnapshot.player.x;
+    const rightRect = await cdp.evaluate("(() => { const r = document.getElementById('mobileRightButton').getBoundingClientRect(); return {x:r.left+r.width/2,y:r.top+r.height/2}; })()");
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: rightRect.x, y: rightRect.y, radiusX: 8, radiusY: 8, force: 1, id: 1 }] });
+    await sleep(320);
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await sleep(70);
+    mobileSnapshot = await cdp.evaluate('window.PulseCourier.getSnapshot()');
+    assert.ok(mobileSnapshot.player.x > mobileStartX + 5, 'holding the mobile right control should move the courier');
+
+    const dashRect = await cdp.evaluate("(() => { const r = document.getElementById('mobileDashButton').getBoundingClientRect(); return {x:r.left+r.width/2,y:r.top+r.height/2}; })()");
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: dashRect.x, y: dashRect.y, radiusX: 8, radiusY: 8, force: 1, id: 2 }] });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await sleep(50);
+    mobileSnapshot = await cdp.evaluate('window.PulseCourier.getSnapshot()');
+    assert.ok(mobileSnapshot.player.dashCooldownRemaining > 0, 'mobile Dash button should trigger dash');
+
+    await cdp.evaluate("state.pulse = 100; updateHud();");
+    const pulseRect = await cdp.evaluate("(() => { const r = document.getElementById('mobilePulseButton').getBoundingClientRect(); return {x:r.left+r.width/2,y:r.top+r.height/2}; })()");
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: pulseRect.x, y: pulseRect.y, radiusX: 8, radiusY: 8, force: 1, id: 3 }] });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await sleep(50);
+    mobileSnapshot = await cdp.evaluate('window.PulseCourier.getSnapshot()');
+    assert.equal(Math.round(mobileSnapshot.pulse), 0, 'mobile Pulse button should fire a charged pulse');
+    if (process.env.PULSE_MOBILE_GAME_SCREENSHOT) {
+      const shot = await cdp.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
+      fs.writeFileSync(process.env.PULSE_MOBILE_GAME_SCREENSHOT, Buffer.from(shot.data, 'base64'));
+    }
+
+    await cdp.evaluate("document.getElementById('pauseButton').click()");
+    await sleep(60);
+    const pauseFit = await cdp.evaluate("(() => { const frame=document.querySelector('.game-frame').getBoundingClientRect(); const card=document.querySelector('.pause-card').getBoundingClientRect(); const last=document.getElementById('pauseMenuButton').getBoundingClientRect(); return {frameTop:frame.top,frameBottom:frame.bottom,cardTop:card.top,cardBottom:card.bottom,lastBottom:last.bottom}; })()");
+    assert.ok(pauseFit.cardTop >= pauseFit.frameTop - 1, 'mobile pause card should stay inside the game frame');
+    assert.ok(pauseFit.lastBottom <= pauseFit.cardBottom + 1, 'all mobile pause actions should be visible without scrolling the pause card');
+    assert.ok(pauseFit.cardBottom <= pauseFit.frameBottom + 1, 'mobile pause card should stay inside the game frame');
+    if (process.env.PULSE_MOBILE_SCREENSHOT) {
+      const shot = await cdp.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
+      fs.writeFileSync(process.env.PULSE_MOBILE_SCREENSHOT, Buffer.from(shot.data, 'base64'));
     }
 
     const browserErrors = cdp.events.filter((event) => event.method === 'Runtime.exceptionThrown');
