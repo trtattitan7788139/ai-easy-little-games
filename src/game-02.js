@@ -1,5 +1,10 @@
 'use strict';
 
+const CELL_SPAWN_MIN = 0.95;
+const CELL_SPAWN_MAX = 1.35;
+const CELL_DOUBLE_CHANCE = 0.08;
+const MAX_NATURAL_CELLS = 22;
+
 function tryDash() {
   if (state.mode !== 'playing' && state.mode !== 'tutorial') return false;
   const p = state.player;
@@ -130,10 +135,10 @@ function updateCells(dt, allowSpawning) {
 
   if (!allowSpawning) return;
   state.cellSpawnTimer -= dt;
-  if (state.cellSpawnTimer <= 0 && state.cells.length < 26) {
+  if (state.cellSpawnTimer <= 0 && state.cells.length < MAX_NATURAL_CELLS) {
     spawnCell();
-    if (Math.random() < 0.18 && state.cells.length < 26) spawnCell();
-    state.cellSpawnTimer = 0.70 + Math.random() * 0.45;
+    if (Math.random() < CELL_DOUBLE_CHANCE && state.cells.length < MAX_NATURAL_CELLS) spawnCell();
+    state.cellSpawnTimer = CELL_SPAWN_MIN + Math.random() * (CELL_SPAWN_MAX - CELL_SPAWN_MIN);
   }
 }
 
