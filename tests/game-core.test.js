@@ -12,6 +12,7 @@ const {
   createBasePlayerStats,
   applyUpgrade,
   pickUpgradeChoices,
+  steerTowardWithSeparation,
   UPGRADES,
 } = require('../src/game-core.js');
 
@@ -100,4 +101,37 @@ test('pickUpgradeChoices never requests more than the available upgrade pool', (
   const choices = pickUpgradeChoices(99, () => 0.5);
   assert.equal(choices.length, UPGRADES.length);
   assert.equal(new Set(choices.map((choice) => choice.id)).size, UPGRADES.length);
+});
+
+test('upgrade choices use Traditional Chinese names and descriptions', () => {
+  assert.deepEqual(
+    UPGRADES.map(({ id, name, description }) => ({ id, name, description })),
+    [
+      { id: 'overdrive', name: '超載推進', description: '移動速度 +12%。' },
+      { id: 'reinforced-hull', name: '強化船體', description: '最大船體 +1，並修復 1 格船體。' },
+      { id: 'cargo-lattice', name: '貨艙擴充', description: '貨艙容量 +2，存入分數額外 +5%。' },
+      { id: 'phase-cooling', name: '相位冷卻', description: '衝刺冷卻時間 -15%（最低 1.4 秒）。' },
+      { id: 'wide-pulse', name: '廣域脈衝', description: '脈衝範圍 +22%。' },
+      { id: 'capacitor', name: '高效電容', description: '脈衝充能速度 +20%。' },
+    ],
+  );
+});
+
+test('enemy steering separates enemies that pursue the same target', () => {
+  const target = { x: 100, y: 0 };
+  const a = { id: 1, x: 0, y: 0 };
+  const b = { id: 2, x: 0, y: 0 };
+  const enemies = [a, b];
+  const dirA = steerTowardWithSeparation(a, target, enemies, 48, 1.35);
+  const dirB = steerTowardWithSeparation(b, target, enemies, 48, 1.35);
+  assert.ok(Math.hypot(dirA.x, dirA.y) > 0.99);
+  assert.ok(Math.hypot(dirB.x, dirB.y) > 0.99);
+  assert.notDeepEqual(dirA, dirB, 'overlapping enemies should not receive identical steering');
+});
+
+test('enemy steering is direct pursuit when no neighbor is nearby', () => {
+  const enemy = { id: 1, x: 0, y: 0 };
+  const dir = steerTowardWithSeparation(enemy, { x: 100, y: 0 }, [enemy, { id: 2, x: 200, y: 200 }], 48, 1.35);
+  assert.ok(Math.abs(dir.x - 1) < 1e-9);
+  assert.ok(Math.abs(dir.y) < 1e-9);
 });
