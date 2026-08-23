@@ -8,6 +8,11 @@ function spawnPulseRing(x, y, radius) {
   state.particles.push({ type: 'ring', x, y, color: '#b89cff', life: 0.42, maxLife: 0.42, radius, current: 18 });
 }
 
+function spawnShockwaveRing(x, y, radius, coreRadius) {
+  state.particles.push({ type: 'ring', x, y, color: '#eaffff', life: 0.36, maxLife: 0.36, radius, current: 20 });
+  state.particles.push({ type: 'ring', x, y, color: '#66efff', life: 0.24, maxLife: 0.24, radius: coreRadius * 1.15, current: 12 });
+}
+
 function updateParticles(dt) {
   for (const particle of state.particles) {
     particle.life -= dt;

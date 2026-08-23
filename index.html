@@ -7,12 +7,13 @@
   <meta name="description" content="Pulse Courier: Neon Run — a short neon risk/reward survival game playable directly in your browser.">
   <title>Pulse Courier: Neon Run</title>
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="mobile-v112.css">
+  <link rel="stylesheet" href="mobile-v120.css">
   <script defer src="src/game-core.js"></script>
   <script defer src="src/game.js"></script>
   <script defer src="src/game-02.js"></script>
   <script defer src="src/game-03.js"></script>
   <script defer src="src/game-04.js"></script>
+  <script defer src="src/game-06.js"></script>
   <script defer src="src/game-05.js"></script>
 </head>
 <body>
@@ -62,6 +63,10 @@
             <span class="hud-label">SCORE</span>
             <strong id="scoreValue" class="hud-value">0</strong>
           </div>
+          <div class="hud-card difficulty-card">
+            <span class="hud-label">MODE</span>
+            <strong id="difficultyValue" class="hud-value">簡單</strong>
+          </div>
         </div>
       </section>
 
@@ -101,9 +106,14 @@
           <p class="hero-copy">把能量帶回中繼站。帶得越多，分數越高；但敵人也會更快找上你。</p>
 
           <div class="menu-actions">
-            <button id="startButton" class="primary-button" type="button">
-              <span>開始任務</span><small>約 4 分鐘</small>
-            </button>
+            <div class="difficulty-actions" aria-label="選擇任務難度">
+              <button id="startButton" class="primary-button difficulty-button" type="button">
+                <span>簡單</span><small>完整擊殺分數 · 約 4 分鐘</small>
+              </button>
+              <button id="normalButton" class="secondary-button difficulty-button" type="button">
+                <span>普通</span><small>擊殺分數 ×0.5 · 約 4 分鐘</small>
+              </button>
+            </div>
             <button id="tutorialButton" class="secondary-button" type="button">
               <span>新手教學</span><small>第一次玩建議先選這個</small>
             </button>
@@ -111,8 +121,9 @@
           </div>
 
           <div class="menu-stats" aria-label="本機紀錄">
-            <div><span>最佳分數</span><strong id="bestScore">0</strong></div>
-            <div><span>最高存入</span><strong id="menuBestBanked">0</strong></div>
+            <div><span>簡單最佳</span><strong id="bestScore">0</strong></div>
+            <div><span>普通最佳</span><strong id="bestNormalScore">0</strong></div>
+            <div class="wide-stat"><span>最高存入</span><strong id="menuBestBanked">0</strong></div>
           </div>
 
           <p class="control-hint"><kbd>WASD</kbd> 移動　<kbd>SPACE</kbd> 衝刺　<kbd>E</kbd> 脈衝　<kbd>P / ESC</kbd> 暫停</p>
@@ -191,6 +202,7 @@
           <span id="endKicker" class="eyebrow">MISSION COMPLETE</span>
           <h2 id="endTitle">任務完成</h2>
           <p id="endSummary">中繼站已穩定，能量安全送達。</p>
+          <p class="end-difficulty">本局難度：<strong id="finalDifficulty">簡單</strong></p>
           <div class="end-stats">
             <div><span>本局分數</span><strong id="finalScore">0</strong></div>
             <div><span>存入能量</span><strong id="finalBanked">0</strong></div>
@@ -226,7 +238,7 @@
     </section>
 
     <footer class="footer-note">
-      <span>v1.1.2 // DESKTOP + MOBILE</span>
+      <span>v1.2.0 // DESKTOP + MOBILE</span>
       <span>所有進度只儲存在這台瀏覽器</span>
     </footer>
   </main>

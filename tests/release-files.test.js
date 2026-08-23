@@ -23,14 +23,14 @@ test('release includes a one-click Windows launcher and license', () => {
 });
 
 test('runtime files contain no external web asset dependencies', () => {
-  for (const file of ['index.html', 'styles.css', 'mobile-v112.css', 'src/game-core.js', 'src/game.js']) {
+  for (const file of ['index.html', 'styles.css', 'mobile-v120.css', 'src/game-core.js', 'src/game.js']) {
     assert.doesNotMatch(read(file), /https?:\/\//i, `${file} should remain fully local`);
   }
 });
 
-test('v1.1.2 mobile override stylesheet is included locally', () => {
-  assert.equal(fs.existsSync(path.join(root, 'mobile-v112.css')), true, 'mobile-v112.css should exist');
-  assert.match(read('index.html'), /href="mobile-v112\.css"/);
+test('v1.2 mobile viewport stylesheet is included locally', () => {
+  assert.equal(fs.existsSync(path.join(root, 'mobile-v120.css')), true, 'mobile-v120.css should exist');
+  assert.match(read('index.html'), /href="mobile-v120\.css"/);
 });
 
 test('browser runtime is split into upload-safe local script segments', () => {
@@ -66,4 +66,16 @@ test('dash impact runtime distinguishes locked dash from unlocked attacks', () =
   assert.match(runtime, /dashImpactLevel\s*>\s*0/);
   assert.match(runtime, /dashImpactRadius/);
   assert.match(runtime, /dashImpactScore/);
+});
+
+
+test('v1.2 runtime includes difficulty scoring, dash aftershock, and dynamic arena resize', () => {
+  const runtime = ['src/game.js', 'src/game-02.js', 'src/game-03.js', 'src/game-04.js', 'src/game-05.js', 'src/game-06.js']
+    .filter((file) => fs.existsSync(path.join(root, file)))
+    .map(read).join('\n');
+  assert.match(runtime, /difficultyKillMultiplier/);
+  assert.match(runtime, /awardKillScore/);
+  assert.match(runtime, /triggerDashAftershock/);
+  assert.match(runtime, /syncArenaViewport/);
+  assert.match(runtime, /orientationchange|visualViewport/);
 });

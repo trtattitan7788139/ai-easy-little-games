@@ -53,7 +53,7 @@ function handleEnemyCollisions() {
       const destroyed = state.enemies.filter((enemy) => Math.hypot(enemy.x - contact.x, enemy.y - contact.y) <= p.dashImpactRadius + enemy.r);
       const ids = new Set(destroyed.map((enemy) => enemy.id));
       state.enemies = state.enemies.filter((enemy) => !ids.has(enemy.id));
-      state.score += destroyed.length * p.dashImpactScore;
+      awardKillScore(p.dashImpactScore, destroyed.length);
       for (const enemy of destroyed) spawnBurst(enemy.x, enemy.y, '#66efff', 12, 150);
       state.screenShake = Math.max(state.screenShake, 5 + Math.min(5, destroyed.length));
       playTone(245, 0.07, 'square', 0.026);
@@ -95,7 +95,7 @@ function damagePlayer(enemy) {
 
 function checkUpgrade() {
   if (state.nextUpgradeIndex >= UPGRADE_THRESHOLDS.length) return;
-  if (state.score < UPGRADE_THRESHOLDS[state.nextUpgradeIndex]) return;
+  if (upgradeProgressScore() < UPGRADE_THRESHOLDS[state.nextUpgradeIndex]) return;
   upgradeReturnMode = state.mode;
   state.mode = 'upgrade';
   state.nextUpgradeIndex += 1;
@@ -128,9 +128,10 @@ function chooseUpgrade(id) {
 function finishRun(victory) {
   state.mode = victory ? 'victory' : 'gameover';
   keys.clear();
-  const oldBestScore = Number(readStorage(STORAGE_KEYS.bestScore, '0')) || 0;
+  const scoreKey = bestScoreStorageKey(state.difficulty);
+  const oldBestScore = Number(readStorage(scoreKey, '0')) || 0;
   const oldBestBanked = Number(readStorage(STORAGE_KEYS.bestBanked, '0')) || 0;
-  if (state.score > oldBestScore) writeStorage(STORAGE_KEYS.bestScore, String(state.score));
+  if (state.score > oldBestScore) writeStorage(scoreKey, String(state.score));
   if (state.banked > oldBestBanked) writeStorage(STORAGE_KEYS.bestBanked, String(state.banked));
   dom.endKicker.textContent = victory ? 'MISSION COMPLETE' : 'COURIER OFFLINE';
   dom.endTitle.textContent = victory ? '任務完成' : '任務失敗';
@@ -139,6 +140,7 @@ function finishRun(victory) {
     : '船體已失去反應。下一局可以少貪一點，先把貨送回 Relay。';
   dom.finalScore.textContent = String(state.score);
   dom.finalBanked.textContent = String(state.banked);
+  dom.finalDifficulty.textContent = difficultyLabel(state.difficulty);
   updateBestLabels();
   syncUiState();
   playTone(victory ? 660 : 120, victory ? 0.18 : 0.22, victory ? 'triangle' : 'sawtooth', 0.045);
@@ -151,7 +153,7 @@ function setTutorialStep(step) {
   dom.tutorialFinishButton.classList.add('is-hidden');
 
   const steps = [
-    ['移動', '使用 WASD 或方向鍵移動。只要離開起點一小段距離即可完成。'],
+    ['移動', '使用 WASD／方向鍵移動；手機使用左側虛擬搖桿。只要離開起點一小段距離即可完成。'],
     ['拾取能量', '前往閃爍的黃色能量球。靠近它就會自動拾取，不需要按其他按鍵。'],
     ['把貨送回 Relay', '現在你身上有貨。回到畫面中央的藍色 Relay，接觸它就會自動存入。'],
     ['使用 Dash', '按 SPACE 衝刺。Dash 很快，而且衝刺期間短暫無敵，是被包圍時最重要的逃生工具。'],
@@ -197,7 +199,7 @@ function spawnTutorialPulseTargets() {
 
 function finishTutorialAndStart() {
   writeStorage(STORAGE_KEYS.tutorialDone, 'true');
-  startMission();
+  startMission('easy');
 }
 
 function updateAmbient(dt) {

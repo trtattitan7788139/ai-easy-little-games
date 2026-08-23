@@ -12,7 +12,7 @@
     Object.freeze({ id: 'phase-cooling', name: '相位冷卻', icon: '⌁', description: '衝刺冷卻時間 -15%（最低 1.4 秒）。' }),
     Object.freeze({ id: 'wide-pulse', name: '廣域脈衝', icon: '◉', description: '脈衝範圍 +22%。' }),
     Object.freeze({ id: 'capacitor', name: '高效電容', icon: 'ϟ', description: '脈衝充能速度 +20%。' }),
-    Object.freeze({ id: 'dash-impact', name: '衝刺撞擊', icon: '✦', description: '解鎖衝刺攻擊：撞擊敵人可直接擊破，每隻 +4 分。' }),
+    Object.freeze({ id: 'dash-impact', name: '衝刺撞擊', icon: '✦', description: '解鎖衝刺攻擊：撞擊敵人可擊破並得分；衝刺結束會釋放擊退衝擊波。' }),
   ]);
 
   function clamp(value, min, max) {
@@ -75,6 +75,33 @@
     const combinedY = pursuitY + separationY;
     const combinedMagnitude = Math.max(0.0001, Math.hypot(combinedX, combinedY));
     return { x: combinedX / combinedMagnitude, y: combinedY / combinedMagnitude };
+  }
+
+
+
+  function difficultyKillMultiplier(difficulty) {
+    return difficulty === 'normal' ? 0.5 : 1;
+  }
+
+  function dashAftershockStats(level) {
+    const normalized = Math.max(0, Math.floor(Number(level) || 0));
+    if (normalized <= 0) return { radius: 0, push: 0, coreRadius: 0 };
+    return {
+      radius: 145 + (normalized - 1) * 10,
+      push: 70 + (normalized - 1) * 6,
+      coreRadius: 65,
+    };
+  }
+
+  function dashAftershockPush(distance, neighborCount, level) {
+    const stats = dashAftershockStats(level);
+    if (stats.radius <= 0) return 0;
+    const normalizedDistance = clamp(Math.max(0, Number(distance) || 0), 0, stats.radius);
+    const proximity = 1 - normalizedDistance / stats.radius;
+    const distanceFactor = 0.5 + proximity * 0.5;
+    const crowd = Math.max(0, Math.floor(Number(neighborCount) || 0));
+    const crowdFactor = Math.max(0.38, 1 - crowd * 0.1);
+    return stats.push * distanceFactor * crowdFactor;
   }
 
   function carryMultiplier(carried) {
@@ -162,7 +189,7 @@
       return Object.freeze({
         ...upgrade,
         name: `衝刺撞擊 Lv.${level + 1}`,
-        description: `強化衝刺撞擊：爆破範圍 +12 px，擊破分數 +2（下一級每隻 +${(Number(stats.dashImpactScore) || 4) + 2} 分）。`,
+        description: `強化衝刺撞擊：撞擊爆破範圍 +12 px、擊破分數 +2，衝擊波範圍與推力同步提升（下一級每隻 +${(Number(stats.dashImpactScore) || 4) + 2} 分）。`,
       });
     });
   }
@@ -184,6 +211,9 @@
     clamp,
     circlesOverlap,
     steerTowardWithSeparation,
+    difficultyKillMultiplier,
+    dashAftershockStats,
+    dashAftershockPush,
     carryMultiplier,
     carrySpeedFactor,
     bankReward,

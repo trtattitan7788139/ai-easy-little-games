@@ -41,7 +41,7 @@ function tryPulse() {
     }
     return !inside;
   });
-  state.score += removed * 3;
+  awardKillScore(3, removed);
   state.screenShake = Math.max(state.screenShake, 4);
   spawnPulseRing(p.x, p.y, p.pulseRadius);
   playTone(110, 0.18, 'sine', 0.045);
@@ -104,6 +104,7 @@ function updateTutorial(dt) {
 
 function updatePlayer(dt) {
   const p = state.player;
+  const wasDashing = p.dashRemaining > 0;
   p.dashCooldownRemaining = Math.max(0, p.dashCooldownRemaining - dt);
   p.dashRemaining = Math.max(0, p.dashRemaining - dt);
   p.invulnerable = Math.max(0, p.invulnerable - dt);
@@ -124,6 +125,7 @@ function updatePlayer(dt) {
   if (p.dashRemaining > 0 && (direction.x !== 0 || direction.y !== 0) && Math.random() < 0.75) {
     state.particles.push(makeParticle(p.x - direction.x * 10, p.y - direction.y * 10, '#66efff', 0.28, 25));
   }
+  if (wasDashing && p.dashRemaining <= 0 && p.dashImpactLevel > 0) triggerDashAftershock();
 }
 
 function updateCells(dt, allowSpawning) {

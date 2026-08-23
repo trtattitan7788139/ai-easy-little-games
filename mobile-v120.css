@@ -1,0 +1,176 @@
+/* v1.2 mobile viewport, analog joystick, and landscape arena overrides */
+.mobile-joystick, .mobile-joystick *, .mobile-action {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.difficulty-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.menu-stats .wide-stat { grid-column: 1 / -1; }
+.end-difficulty { margin: -5px 0 12px; color: #8fa7bf; font-size: 12px; }
+.end-difficulty strong { color: #ffe45c; }
+.difficulty-card .hud-value { color: #ffe45c; }
+
+@media (orientation: portrait) and (max-width: 560px) {
+  html, body { min-height: 100dvh; }
+  body { overscroll-behavior: none; }
+  .app-shell {
+    width: 100%; min-height: 100dvh;
+    padding: max(9px, env(safe-area-inset-top)) 8px max(10px, env(safe-area-inset-bottom));
+    grid-template-rows: 44px auto auto auto; align-content: start; gap: 9px;
+  }
+  .topbar { min-height: 44px; }
+  .brand-mark { width: 32px; height: 32px; font-size: 11px; }
+  .icon-button { width: 42px; height: 42px; font-size: 16px; }
+  .brand-mini > span:last-child, .footer-note span:last-child { display: none; }
+
+  .game-frame {
+    width: 100%; height: clamp(310px, 39dvh, 338px); aspect-ratio: auto;
+    min-height: 310px; max-height: 338px; border-radius: 15px;
+  }
+  .hud { inset: 6px 6px auto; display: grid; grid-template-columns: 1fr; gap: 5px; }
+  .hud-primary, .hud-secondary { display: grid; gap: 4px; margin-left: 0; }
+  .hud-primary { grid-template-columns: repeat(4, 1fr); }
+  .hud-secondary { grid-template-columns: repeat(3, 1fr); }
+  .hud-card { min-width: 0; padding: 6px 7px; border-radius: 8px; }
+  .hud-label { margin-bottom: 2px; font-size: 8px; letter-spacing: .11em; }
+  .hud-value { font-size: 12px; }
+  .hull-card { min-width: 0; }
+  .ability-rack { display: none; }
+
+  .mobile-controls {
+    display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+    gap: 14px; min-height: 252px; padding: 14px 12px;
+    border: 1px solid rgba(102, 239, 255, .18); border-radius: 18px;
+    background: linear-gradient(180deg, rgba(8, 15, 31, .74), rgba(5, 9, 21, .92));
+  }
+  .mobile-joystick {
+    width: 184px; height: 220px; margin: auto; display: grid;
+    align-content: center; justify-items: center; gap: 9px;
+  }
+  .joystick-ring {
+    position: relative; width: 176px; height: 176px;
+    border: 1px solid rgba(102, 239, 255, .38); border-radius: 50%;
+    background: radial-gradient(circle, rgba(22, 217, 255, .10) 0 34%, rgba(8, 17, 36, .90) 35% 100%);
+    box-shadow: inset 0 0 34px rgba(22, 217, 255, .08), 0 0 28px rgba(0, 0, 0, .28);
+  }
+  .joystick-guides::before, .joystick-guides::after {
+    content: ""; position: absolute; left: 50%; top: 50%;
+    background: rgba(102, 239, 255, .12); transform: translate(-50%, -50%);
+  }
+  .joystick-guides::before { width: 74%; height: 1px; }
+  .joystick-guides::after { width: 1px; height: 74%; }
+  .joystick-stick {
+    position: absolute; left: 50%; top: 50%; width: 66px; height: 66px;
+    margin: -33px 0 0 -33px; border: 1px solid rgba(102, 239, 255, .86); border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, rgba(148, 247, 255, .48), rgba(13, 72, 101, .96));
+    box-shadow: 0 0 28px rgba(22, 217, 255, .24), inset 0 0 18px rgba(255,255,255,.08);
+    pointer-events: none; will-change: transform; transition: transform .08s ease-out;
+  }
+  .mobile-joystick.is-active .joystick-stick { transition: none; box-shadow: 0 0 34px rgba(22,217,255,.40); }
+  .joystick-label { color: #7398b2; font-size: 10px; font-weight: 900; letter-spacing: .17em; }
+  .mobile-actions { display: grid; grid-template-rows: 1fr 1fr; gap: 12px; }
+  .mobile-action { min-height: 108px; padding: 13px 14px; border-radius: 18px; }
+  .mobile-action-name { font-size: 12px; }
+  .mobile-action strong { font-size: 18px; }
+  .mobile-action small { font-size: 9px; }
+
+  .overlay { padding: 10px; overflow-y: auto; overscroll-behavior: contain; }
+  .modal-card { padding: 13px 14px; max-height: calc(100% - 8px); }
+  .menu-screen { align-items: start; padding-top: 11px; }
+  .hero-card { width: 100%; margin: 0; }
+  .hero-card h1 { margin-top: 4px; font-size: 44px; }
+  .hero-subtitle { margin: 3px 0 6px; font-size: 11px; }
+  .hero-copy { margin-bottom: 8px; font-size: 11px; line-height: 1.38; }
+  .menu-actions { gap: 6px; }
+  .difficulty-actions { gap: 6px; }
+  .menu-screen .primary-button, .menu-screen .secondary-button { min-height: 43px; padding: 6px 9px; }
+  .menu-screen .ghost-button { min-height: 34px; }
+  .primary-button small, .secondary-button small { font-size: 8px; }
+  .menu-stats { margin-top: 7px; gap: 6px; }
+  .menu-stats > div { padding: 6px 8px; }
+  .menu-stats span { font-size: 8px; }
+  .menu-stats strong { font-size: 13px; }
+  .control-hint { display: none; }
+  .tutorial-panel { bottom: 7px; width: calc(100% - 14px); padding: 8px 10px; }
+  .tutorial-panel p { font-size: 10px; }
+  .pause-card { width: min(380px, 100%); }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  html, body { width: 100%; min-height: 100dvh; overflow: hidden; }
+  body { overscroll-behavior: none; }
+  .app-shell {
+    width: 100%; height: 100dvh; min-height: 0;
+    padding: max(3px, env(safe-area-inset-top)) max(7px, env(safe-area-inset-right)) max(3px, env(safe-area-inset-bottom)) max(7px, env(safe-area-inset-left));
+    grid-template-rows: 38px 1fr; gap: 3px;
+  }
+  .topbar { width: 100%; min-height: 36px; margin: 0; }
+  .brand-mark { width: 29px; height: 29px; }
+  .brand-mini > span:last-child { display: none; }
+  .icon-button { width: 35px; height: 35px; }
+  .game-frame {
+    width: 100%; height: calc(100dvh - 44px); max-height: none;
+    aspect-ratio: auto; margin: 0; border-radius: 12px;
+  }
+  .hud { inset: 6px 7px auto; gap: 5px; }
+  .hud-card { min-width: 72px; padding: 5px 7px; }
+  .hud-label { font-size: 8px; margin-bottom: 1px; }
+  .hud-value { font-size: 11px; }
+  .ability-rack, .footer-note { display: none; }
+
+  .mobile-controls {
+    position: fixed; z-index: 20; inset: 40px 0 0; display: block;
+    min-height: 0; padding: 0; border: 0; border-radius: 0;
+    background: transparent; pointer-events: none;
+  }
+  .mobile-joystick {
+    position: absolute; left: max(18px, env(safe-area-inset-left)); bottom: max(12px, env(safe-area-inset-bottom));
+    width: 180px; height: 180px; margin: 0; display: block; pointer-events: auto;
+  }
+  .joystick-ring {
+    position: absolute; left: 0; bottom: 0; width: 168px; height: 168px;
+    border: 1px solid rgba(102,239,255,.42); border-radius: 50%;
+    background: radial-gradient(circle, rgba(22,217,255,.11) 0 34%, rgba(8,17,36,.72) 35% 100%);
+    box-shadow: inset 0 0 32px rgba(22,217,255,.08), 0 0 26px rgba(0,0,0,.26);
+  }
+  .joystick-guides::before, .joystick-guides::after {
+    content: ""; position: absolute; left: 50%; top: 50%; background: rgba(102,239,255,.13); transform: translate(-50%,-50%);
+  }
+  .joystick-guides::before { width: 74%; height: 1px; }
+  .joystick-guides::after { width: 1px; height: 74%; }
+  .joystick-stick {
+    position: absolute; left: 50%; top: 50%; width: 62px; height: 62px; margin: -31px 0 0 -31px;
+    border: 1px solid rgba(102,239,255,.88); border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, rgba(148,247,255,.50), rgba(13,72,101,.94));
+    box-shadow: 0 0 28px rgba(22,217,255,.28); pointer-events: none; will-change: transform;
+  }
+  .joystick-label { display: none; }
+  .mobile-actions {
+    position: absolute; right: max(18px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom));
+    width: 194px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; pointer-events: auto;
+  }
+  .mobile-action { min-height: 104px; padding: 10px 8px; border-radius: 20px; text-align: center; }
+  .mobile-action-name { font-size: 12px; }
+  .mobile-action strong { font-size: 16px; }
+  .mobile-action small { display: none; }
+
+  .overlay { padding: 8px; overflow-y: auto; }
+  .modal-card { max-height: calc(100% - 6px); padding: 10px 14px; }
+  .menu-screen { align-items: center; }
+  .hero-card { width: min(610px, 88%); margin-left: 0; }
+  .hero-card h1 { font-size: 48px; }
+  .hero-copy { margin-bottom: 7px; font-size: 11px; }
+  .difficulty-actions { grid-template-columns: 1fr 1fr; }
+  .menu-screen .primary-button, .menu-screen .secondary-button { min-height: 39px; padding: 5px 9px; }
+  .menu-stats { margin-top: 6px; }
+  .pause-card, .end-card { width: min(470px, 92%); }
+  .upgrade-card { width: min(720px, 94%); }
+  .upgrade-choices { grid-template-columns: repeat(3, 1fr); gap: 7px; margin-top: 8px; }
+  .upgrade-choice { min-height: 0; padding: 9px; }
+  .upgrade-icon { width: 30px; height: 30px; font-size: 16px; }
+  .upgrade-choice h3 { margin: 5px 0 2px; font-size: 13px; }
+  .upgrade-choice p { font-size: 10px; line-height: 1.28; }
+  .tutorial-panel { bottom: 7px; width: min(540px, 62%); padding: 7px 10px; }
+}

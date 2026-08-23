@@ -84,6 +84,7 @@ function updateHud() {
   dom.multiplierValue.textContent = `×${carryMultiplier(state.carried).toFixed(2)}`;
   dom.bankedValue.textContent = `${state.banked} / ${MISSION_BANKED}`;
   dom.scoreValue.textContent = String(state.score);
+  dom.difficultyValue.textContent = difficultyLabel(state.difficulty);
 
   const dashProgress = p.dashCooldownRemaining <= 0 ? 1 : 1 - p.dashCooldownRemaining / p.dashCooldown;
   dom.dashFill.style.width = `${clamp(dashProgress, 0, 1) * 100}%`;
@@ -124,7 +125,11 @@ function updateSoundButton() {
 }
 
 function updateBestLabels() {
-  dom.bestScore.textContent = String(Number(readStorage(STORAGE_KEYS.bestScore, '0')) || 0);
+  const legacyEasy = Number(readStorage(STORAGE_KEYS.bestScore, '0')) || 0;
+  const easy = Math.max(legacyEasy, Number(readStorage(STORAGE_KEYS.bestScoreEasy, '0')) || 0);
+  const normal = Number(readStorage(STORAGE_KEYS.bestScoreNormal, '0')) || 0;
+  dom.bestScore.textContent = String(easy);
+  dom.bestNormalScore.textContent = String(normal);
   dom.menuBestBanked.textContent = String(Number(readStorage(STORAGE_KEYS.bestBanked, '0')) || 0);
 }
 
@@ -156,6 +161,12 @@ function getSnapshot() {
     cellCount: state.cells.length,
     enemyCount: state.enemies.length,
     tutorialStep: state.tutorialStep,
+    difficulty: state.difficulty,
+    killScoreFraction: state.killScoreFraction,
+    killScorePenalty: state.killScorePenalty,
+    upgradeProgress: upgradeProgressScore(),
+    arenaWidth: W,
+    relayX: RELAY.x,
     player: {
       x: state.player.x,
       y: state.player.y,
@@ -181,6 +192,8 @@ function frame(now) {
 
 function init() {
   cacheDom();
+  syncArenaViewport(true);
+  bindArenaViewport();
   bindUi();
   updateBestLabels();
   updateSoundButton();
@@ -190,7 +203,7 @@ function init() {
     startMission,
     startTutorial,
     showMenu,
-    version: '1.1.2',
+    version: '1.2.0',
   });
   requestAnimationFrame(frame);
 }

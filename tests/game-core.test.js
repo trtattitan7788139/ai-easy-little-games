@@ -15,6 +15,9 @@ const {
   steerTowardWithSeparation,
   getUpgradePool,
   UPGRADES,
+  difficultyKillMultiplier,
+  dashAftershockStats,
+  dashAftershockPush,
 } = require('../src/game-core.js');
 
 test('clamp limits values to a closed range', () => {
@@ -114,7 +117,7 @@ test('upgrade choices use Traditional Chinese names and descriptions', () => {
       { id: 'phase-cooling', name: '相位冷卻', description: '衝刺冷卻時間 -15%（最低 1.4 秒）。' },
       { id: 'wide-pulse', name: '廣域脈衝', description: '脈衝範圍 +22%。' },
       { id: 'capacitor', name: '高效電容', description: '脈衝充能速度 +20%。' },
-      { id: 'dash-impact', name: '衝刺撞擊', description: '解鎖衝刺攻擊：撞擊敵人可直接擊破，每隻 +4 分。' },
+      { id: 'dash-impact', name: '衝刺撞擊', description: '解鎖衝刺攻擊：撞擊敵人可擊破並得分；衝刺結束會釋放擊退衝擊波。' },
     ],
   );
 });
@@ -167,4 +170,26 @@ test('dash impact upgrade copy changes after the ability is unlocked', () => {
   assert.equal(upgrade.name, '衝刺撞擊 Lv.2');
   assert.match(upgrade.description, /爆破範圍 \+12/);
   assert.match(upgrade.description, /擊破分數 \+2/);
+});
+
+
+test('difficulty kill scoring keeps easy at full value and halves normal kills', () => {
+  assert.equal(difficultyKillMultiplier('easy'), 1);
+  assert.equal(difficultyKillMultiplier('normal'), 0.5);
+  assert.equal(difficultyKillMultiplier('unknown'), 1);
+});
+
+test('dash aftershock scales radius and push while keeping a fixed zero-score core', () => {
+  assert.deepEqual(dashAftershockStats(0), { radius: 0, push: 0, coreRadius: 0 });
+  assert.deepEqual(dashAftershockStats(1), { radius: 145, push: 70, coreRadius: 65 });
+  assert.deepEqual(dashAftershockStats(3), { radius: 165, push: 82, coreRadius: 65 });
+});
+
+test('dense enemy crowds resist dash aftershock push more than isolated enemies', () => {
+  const isolated = dashAftershockPush(20, 0, 1);
+  const crowded = dashAftershockPush(20, 6, 1);
+  const edge = dashAftershockPush(140, 0, 1);
+  assert.ok(isolated > crowded, 'crowd resistance should reduce push distance');
+  assert.ok(isolated > edge, 'enemies nearer the blast center should be pushed farther');
+  assert.ok(crowded > 0);
 });

@@ -17,15 +17,20 @@ const {
   createBasePlayerStats,
   applyUpgrade,
   pickUpgradeChoices,
+  difficultyKillMultiplier,
+  dashAftershockStats,
+  dashAftershockPush,
 } = core;
 
-const W = 960;
+let W = 960;
 const H = 600;
 const MISSION_SECONDS = 240;
 const MISSION_BANKED = 60;
-const RELAY = Object.freeze({ x: W / 2, y: H / 2, r: 54 });
+const RELAY = { x: W / 2, y: H / 2, r: 54 };
 const STORAGE_KEYS = Object.freeze({
   bestScore: 'pulseCourier.bestScore',
+  bestScoreEasy: 'pulseCourier.bestScore.easy',
+  bestScoreNormal: 'pulseCourier.bestScore.normal',
   bestBanked: 'pulseCourier.bestBanked',
   sound: 'pulseCourier.sound',
   tutorialDone: 'pulseCourier.tutorialDone',
@@ -59,6 +64,9 @@ const state = {
   banked: 0,
   carried: 0,
   pulse: 0,
+  difficulty: 'easy',
+  killScoreFraction: 0,
+  killScorePenalty: 0,
   player: makePlayer(),
   cells: [],
   enemies: [],
@@ -106,11 +114,11 @@ function makeStars(count) {
 
 function cacheDom() {
   const ids = [
-    'gameCanvas', 'menuScreen', 'startButton', 'tutorialButton', 'howButton', 'howScreen', 'howCloseButton', 'howTutorialButton',
-    'hud', 'abilityRack', 'hullValue', 'timerValue', 'cargoValue', 'multiplierValue', 'bankedValue', 'scoreValue',
+    'gameCanvas', 'menuScreen', 'startButton', 'normalButton', 'tutorialButton', 'howButton', 'howScreen', 'howCloseButton', 'howTutorialButton',
+    'hud', 'abilityRack', 'hullValue', 'timerValue', 'cargoValue', 'multiplierValue', 'bankedValue', 'scoreValue', 'difficultyValue',
     'dashFill', 'dashLabel', 'dashImpactLabel', 'pulseFill', 'pulseLabel', 'tutorialPanel', 'tutorialStep', 'tutorialText', 'tutorialProgress', 'tutorialFinishButton',
     'upgradeScreen', 'upgradeChoices', 'pauseScreen', 'resumeButton', 'pauseRestartButton', 'pauseMenuButton',
-    'endScreen', 'endKicker', 'endTitle', 'endSummary', 'finalScore', 'finalBanked', 'bestScore', 'menuBestBanked',
+    'endScreen', 'endKicker', 'endTitle', 'endSummary', 'finalScore', 'finalBanked', 'finalDifficulty', 'bestScore', 'bestNormalScore', 'menuBestBanked',
     'restartButton', 'menuButton', 'pauseButton', 'soundButton',
     'mobileControls', 'mobileJoystick', 'mobileJoystickStick',
     'mobileDashButton', 'mobilePulseButton', 'mobileDashLabel', 'mobilePulseLabel', 'mobileDashImpactLabel',
@@ -124,7 +132,8 @@ function cacheDom() {
 }
 
 function bindUi() {
-  dom.startButton.addEventListener('click', startMission);
+  dom.startButton.addEventListener('click', () => startMission('easy'));
+  dom.normalButton.addEventListener('click', () => startMission('normal'));
   dom.tutorialButton.addEventListener('click', startTutorial);
   dom.howButton.addEventListener('click', openHow);
   dom.howCloseButton.addEventListener('click', closeHow);
@@ -133,9 +142,9 @@ function bindUi() {
   dom.pauseButton.addEventListener('click', togglePause);
   dom.soundButton.addEventListener('click', toggleSound);
   dom.resumeButton.addEventListener('click', resumeGame);
-  dom.pauseRestartButton.addEventListener('click', () => (pausedFrom === 'tutorial' ? startTutorial() : startMission()));
+  dom.pauseRestartButton.addEventListener('click', () => (pausedFrom === 'tutorial' ? startTutorial() : startMission(state.difficulty)));
   dom.pauseMenuButton.addEventListener('click', showMenu);
-  dom.restartButton.addEventListener('click', startMission);
+  dom.restartButton.addEventListener('click', () => startMission(state.difficulty));
   dom.menuButton.addEventListener('click', showMenu);
 
   window.addEventListener('keydown', onKeyDown, { passive: false });
@@ -171,94 +180,6 @@ function onKeyDown(event) {
 
 function onKeyUp(event) {
   keys.delete(event.code);
-}
-
-function resetRun(mode) {
-  keys.clear();
-  resetMobileJoystick();
-  state.mode = mode;
-  state.elapsed = 0;
-  state.score = 0;
-  state.banked = 0;
-  state.carried = 0;
-  state.pulse = 0;
-  state.player = makePlayer();
-  state.cells = [];
-  state.enemies = [];
-  state.particles = [];
-  state.spawnTimer = 1.05;
-  state.cellSpawnTimer = 0.05;
-  state.nextUpgradeIndex = 0;
-  state.tutorialStep = 0;
-  state.tutorialMovedDistance = 0;
-  state.tutorialPulseSpawned = false;
-  state.screenShake = 0;
-  state.flash = 0;
-  idCounter = 1;
-}
-
-function startMission() {
-  ensureAudio();
-  resetRun('playing');
-  state.player.x = RELAY.x;
-  state.player.y = RELAY.y + 145;
-  for (let i = 0; i < 9; i += 1) spawnCell();
-  spawnBurst(RELAY.x, RELAY.y, '#66efff', 18, 120);
-  playTone(330, 0.09, 'sine', 0.035);
-  syncUiState();
-}
-
-function startTutorial() {
-  ensureAudio();
-  resetRun('tutorial');
-  state.player.x = RELAY.x;
-  state.player.y = RELAY.y + 145;
-  state.tutorialStart = { x: state.player.x, y: state.player.y };
-  setTutorialStep(0);
-  syncUiState();
-  playTone(440, 0.07, 'sine', 0.025);
-}
-
-function showMenu() {
-  keys.clear();
-  resetMobileJoystick();
-  state.mode = 'menu';
-  state.cells = [];
-  state.enemies = [];
-  state.particles = [];
-  updateBestLabels();
-  syncUiState();
-}
-
-function openHow() {
-  dom.menuScreen.classList.add('is-hidden');
-  dom.howScreen.classList.remove('is-hidden');
-}
-
-function closeHow() {
-  dom.howScreen.classList.add('is-hidden');
-  dom.menuScreen.classList.remove('is-hidden');
-}
-
-function togglePause() {
-  if (state.mode === 'playing' || state.mode === 'tutorial') pauseGame();
-  else if (state.mode === 'paused') resumeGame();
-}
-
-function pauseGame() {
-  if (state.mode !== 'playing' && state.mode !== 'tutorial') return;
-  pausedFrom = state.mode;
-  state.mode = 'paused';
-  keys.clear();
-  resetMobileJoystick();
-  syncUiState();
-}
-
-function resumeGame() {
-  if (state.mode !== 'paused') return;
-  state.mode = pausedFrom;
-  lastFrame = performance.now();
-  syncUiState();
 }
 
 function toggleSound() {
