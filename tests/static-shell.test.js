@@ -35,10 +35,17 @@ test('stylesheet and game scripts exist', () => {
   }
 });
 
-
 test('HTML ids are unique', () => {
   const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   const ids = [...html.matchAll(/\bid=["']([^"']+)["']/g)].map((match) => match[1]);
   const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
   assert.deepEqual([...new Set(duplicates)], []);
+});
+
+test('upgrade overlay uses Traditional Chinese copy', () => {
+  const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const section = html.match(/<section id="upgradeScreen"[\s\S]*?<\/section>/)?.[0] || '';
+  assert.match(section, /中繼站同步完成/);
+  assert.match(section, /選擇一項升級/);
+  assert.doesNotMatch(section, /RELAY SYNCHRONIZED/);
 });
