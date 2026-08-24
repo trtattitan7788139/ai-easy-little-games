@@ -20,27 +20,28 @@
     localizeHealthCopy(dom.upgradeChoices);
   };
 
-  function ensureV124Theme() {
-    if (document.querySelector('link[href="theme-v124.css"]')) return;
+  function ensureTheme(href) {
+    if (document.querySelector(`link[href="${href}"]`)) return;
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'theme-v124.css';
+    link.href = href;
     document.head.appendChild(link);
   }
 
-  function patchVisibleVersionV124() {
+  function patchVisibleVersionV125() {
     const footerVersion = document.querySelector('.footer-note span:first-child');
-    if (footerVersion) footerVersion.textContent = 'v1.2.4 // DESKTOP + MOBILE';
+    if (footerVersion) footerVersion.textContent = 'v1.2.5 // DESKTOP + MOBILE';
   }
 
-  function patchPublicApiV124() {
-    if (!window.PulseCourier || window.PulseCourier.version === '1.2.4') return Boolean(window.PulseCourier);
-    window.PulseCourier = Object.freeze({ ...window.PulseCourier, version: '1.2.4' });
+  function patchPublicApiV125() {
+    if (!window.PulseCourier || window.PulseCourier.version === '1.2.5') return Boolean(window.PulseCourier);
+    window.PulseCourier = Object.freeze({ ...window.PulseCourier, version: '1.2.5' });
     return true;
   }
 
   localizeHealthCopy();
-  ensureV124Theme();
-  patchVisibleVersionV124();
-  if (!patchPublicApiV124()) document.addEventListener('DOMContentLoaded', patchPublicApiV124, { once: true });
+  ensureTheme('theme-v124.css');
+  ensureTheme('theme-v125.css');
+  patchVisibleVersionV125();
+  if (!patchPublicApiV125()) document.addEventListener('DOMContentLoaded', patchPublicApiV125, { once: true });
 })();
