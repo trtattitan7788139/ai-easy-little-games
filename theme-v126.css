@@ -1,0 +1,46 @@
+/* v1.2.6 mobile Dash / Pulse aligned with joystick-ring material */
+
+.mobile-controls .mobile-action {
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(circle, rgba(22,217,255,.09) 0 34%, rgba(8,17,36,.64) 35% 100%);
+  border-color: rgba(102,239,255,.38);
+  box-shadow: inset 0 0 34px rgba(22,217,255,.08), 0 0 28px rgba(0,0,0,.28);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.mobile-controls .mobile-action::before {
+  content: none;
+}
+
+.mobile-controls .mobile-action:active,
+.mobile-controls .touch-button:active,
+.mobile-controls .touch-button.is-pressed {
+  background: radial-gradient(circle, rgba(22,217,255,.14) 0 34%, rgba(8,17,36,.66) 35% 100%);
+  border-color: rgba(102,239,255,.68);
+  box-shadow: inset 0 0 38px rgba(22,217,255,.14), 0 0 30px rgba(22,217,255,.12);
+}
+
+.mobile-controls .dash-action .mobile-action-name {
+  color: #66efff;
+}
+
+.mobile-controls .pulse-action .mobile-action-name {
+  color: #c5b7ff;
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .mobile-controls .mobile-action {
+    background: radial-gradient(circle, rgba(22,217,255,.09) 0 34%, rgba(8,17,36,.58) 35% 100%);
+    border-color: rgba(102,239,255,.42);
+    box-shadow: inset 0 0 32px rgba(22,217,255,.08), 0 0 26px rgba(0,0,0,.26);
+  }
+
+  .mobile-controls .mobile-action:active,
+  .mobile-controls .touch-button:active,
+  .mobile-controls .touch-button.is-pressed {
+    background: radial-gradient(circle, rgba(22,217,255,.14) 0 34%, rgba(8,17,36,.62) 35% 100%);
+    border-color: rgba(102,239,255,.70);
+  }
+}
