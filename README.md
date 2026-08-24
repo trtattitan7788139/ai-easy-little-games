@@ -2,7 +2,7 @@
 
 一款不需要安裝遊戲引擎、下載素材或連線伺服器的短回合瀏覽器遊戲。你是一名在不穩定能量場中工作的 Courier：把散落的能量帶回中央 Relay，決定要安全地少量運送，還是多帶一些換取更高分數倍率，同時躲開越來越密集的敵方無人機。
 
-**v1.2.1 的目標：改善手機 Safari 可視區與全螢幕體驗，降低選完天賦後瞬間受傷的風險，新增緊急修復，以及讓下一次天賦觸發進度可直接看見。**
+**v1.2.2 的目標：在不改玩法的前提下重新平衡整體視覺重心、提高深色場景的文字可讀性，讓簡單／普通難度有更清楚的色彩識別，並把選單與升級動畫改得更柔順。**
 
 ## 🎮 線上遊玩
 
@@ -123,6 +123,16 @@ python -m http.server 8000
 
 每次選完任意天賦後，Courier 會進入 **1.5 秒藍白閃爍無敵保護期**，期間碰撞不扣 HULL；同時會出現一圈小型 Cyan 保護環。
 
+## v1.2.2 視覺調整
+
+- 橫向主選單改為水平置中構圖，內容區最大寬度提高，但標題、說明與按鈕文字仍維持左對齊，避免大螢幕右側留下過多空白。
+- 整體深藍黑背景與面板亮度微幅提高，主要文字改為接近純白，次要文字改為較亮的藍灰，提高暗場可讀性。
+- **簡單**維持 Cyan；**普通**改為 Pantone 165 C 的螢幕近似色 `#FF671F`；**新手教學**維持提高亮度後的 Violet。
+- HUD、能力說明、統計、教學、NEXT UPGRADE 與全螢幕提示同步提高文字與邊框對比。
+- 按鈕 hover / press 改用較柔和的 `cubic-bezier(0.22, 1, 0.36, 1)` 動態曲線。
+- Overlay、主選單與 Modal 新增淡入／微位移進場；天賦三選一卡片改為分段 stagger 進場，減少突然彈出的感覺。
+- 保留 `prefers-reduced-motion`，系統要求減少動畫時會自動停用新增動效。
+
 ## v1.2.1 調整
 
 - 手機版改用 `visualViewport` 的實際可視高度，Safari 網址列與分頁列造成的可用高度變化會即時重算。
@@ -165,6 +175,7 @@ python -m http.server 8000
 ├─ styles.css                 # 基礎 Neon UI 與響應式版面
 ├─ mobile-v120.css            # v1.2 手機放大 UI、動態 Arena 與橫向版面
 ├─ mobile-v121.css            # v1.2.1 Safari 可視區、全螢幕、控制覆蓋與天賦進度 HUD
+├─ theme-v122.css             # v1.2.2 置中構圖、高對比配色與柔順動畫
 ├─ manifest.webmanifest       # 手機加入主畫面的 standalone Web App 設定
 ├─ PLAY.bat                   # Windows 一鍵開啟
 ├─ src/
@@ -185,7 +196,9 @@ python -m http.server 8000
 │  ├─ browser-smoke.js        # Chromium 真實互動 Smoke Test
 │  ├─ v121-core.test.js       # v1.2.1 純規則測試
 │  ├─ v121-runtime.test.js    # v1.2.1 runtime 狀態整合測試
-│  └─ v121-static.test.js     # v1.2.1 DOM / PWA / CSS 結構測試
+│  ├─ v121-static.test.js     # v1.2.1 DOM / PWA / CSS 結構測試
+│  ├─ v122-visual.test.js     # v1.2.2 視覺主題、色票與動態結構測試
+│  └─ release-files-v122.test.js # v1.2.2 主題載入順序與檔案安全檢查
 └─ docs/superpowers/          # v1 設計與實作計畫
 ```
 
@@ -194,7 +207,7 @@ python -m http.server 8000
 核心與 release 測試不需要 npm install。需要 Node.js 18+，在 repository 根目錄執行：
 
 ```bash
-node --test tests/game-core.test.js tests/static-shell.test.js tests/release-files.test.js tests/v121-core.test.js tests/v121-runtime.test.js tests/v121-static.test.js
+node --test tests/game-core.test.js tests/static-shell.test.js tests/release-files.test.js tests/v121-core.test.js tests/v121-runtime.test.js tests/v121-static.test.js tests/v122-visual.test.js tests/release-files-v122.test.js
 ```
 
 Chromium 互動 Smoke Test：
@@ -219,9 +232,9 @@ Smoke Test 會驗證：
 - 直向 → 橫向 → 直向旋轉不重開任務且會重新計算 Arena。
 - 瀏覽器執行期間沒有 JavaScript exception。
 
-v1.2.1 另外提供 `v121-core.test.js`、`v121-runtime.test.js`、`v121-static.test.js`，驗證天賦後 1.5 秒無敵、緊急修復 +2 HULL、Safari `visualViewport` 高度、非阻塞式全螢幕 fallback、公開 API 延後整合，以及天賦進度 HUD。
+v1.2.1 另外提供 `v121-core.test.js`、`v121-runtime.test.js`、`v121-static.test.js`，驗證天賦後 1.5 秒無敵、緊急修復 +2 HULL、Safari `visualViewport` 高度、非阻塞式全螢幕 fallback、公開 API 延後整合，以及天賦進度 HUD。v1.2.2 再加入 `v122-visual.test.js` 與 `release-files-v122.test.js`，鎖定橫向置中、白字高對比、Pantone 165 C 普通難度色票、柔順動態曲線、reduced-motion fallback，以及主題檔載入順序與 9 KB 上傳安全限制。
 
-## v1.2.1 內容範圍
+## v1.2.2 內容範圍
 
 目前第一版是單機、鍵盤操作、單一競技場的完整短回合遊戲。沒有帳號、排行榜伺服器、多人連線、付費、分析追蹤或外部素材。所有畫面以 Canvas/CSS 繪製，音效由 WebAudio 即時產生。
 
