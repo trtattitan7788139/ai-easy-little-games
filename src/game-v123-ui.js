@@ -20,12 +20,27 @@
     localizeHealthCopy(dom.upgradeChoices);
   };
 
-  function patchPublicApiV123() {
-    if (!window.PulseCourier || window.PulseCourier.version === '1.2.3') return Boolean(window.PulseCourier);
-    window.PulseCourier = Object.freeze({ ...window.PulseCourier, version: '1.2.3' });
+  function ensureV124Theme() {
+    if (document.querySelector('link[href="theme-v124.css"]')) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'theme-v124.css';
+    document.head.appendChild(link);
+  }
+
+  function patchVisibleVersionV124() {
+    const footerVersion = document.querySelector('.footer-note span:first-child');
+    if (footerVersion) footerVersion.textContent = 'v1.2.4 // DESKTOP + MOBILE';
+  }
+
+  function patchPublicApiV124() {
+    if (!window.PulseCourier || window.PulseCourier.version === '1.2.4') return Boolean(window.PulseCourier);
+    window.PulseCourier = Object.freeze({ ...window.PulseCourier, version: '1.2.4' });
     return true;
   }
 
   localizeHealthCopy();
-  if (!patchPublicApiV123()) document.addEventListener('DOMContentLoaded', patchPublicApiV123, { once: true });
+  ensureV124Theme();
+  patchVisibleVersionV124();
+  if (!patchPublicApiV124()) document.addEventListener('DOMContentLoaded', patchPublicApiV124, { once: true });
 })();
