@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="mobile-v120.css">
   <link rel="stylesheet" href="mobile-v121.css">
   <link rel="stylesheet" href="theme-v122.css">
+  <link rel="stylesheet" href="theme-v123.css">
   <script defer src="src/game-core.js"></script>
   <script defer src="src/game.js"></script>
   <script defer src="src/game-02.js"></script>
@@ -24,6 +25,7 @@
   <script defer src="src/game-v121-core.js"></script>
   <script defer src="src/game-07.js"></script>
   <script defer src="src/game-08.js"></script>
+  <script defer src="src/game-v123-ui.js"></script>
 </head>
 <body>
   <main class="app-shell" aria-label="Pulse Courier: Neon Run">
@@ -47,7 +49,7 @@
       <section id="hud" class="hud is-hidden" aria-label="任務狀態">
         <div class="hud-cluster hud-primary">
           <div class="hud-card hull-card">
-            <span class="hud-label">HULL</span>
+            <span class="hud-label">血量</span>
             <strong id="hullValue" class="hud-value">◆ ◆ ◆</strong>
           </div>
           <div class="hud-card">
@@ -183,7 +185,7 @@
             <article>
               <span class="step-badge">05</span>
               <h3>被撞會掉貨</h3>
-              <p>敵人撞到你會扣 1 格 HULL，並把一半貨物噴回場上。HULL 歸零就失敗。</p>
+              <p>敵人撞到你會扣 1 格血量，並把一半貨物噴回場上。血量歸零就失敗。</p>
             </article>
             <article>
               <span class="step-badge">06</span>
@@ -258,7 +260,7 @@
     </section>
 
     <footer class="footer-note">
-      <span>v1.2.2 // DESKTOP + MOBILE</span>
+      <span>v1.2.3 // DESKTOP + MOBILE</span>
       <span>所有進度只儲存在這台瀏覽器</span>
     </footer>
   </main>
