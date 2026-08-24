@@ -2,7 +2,7 @@
 
 一款不需要安裝遊戲引擎、下載素材或連線伺服器的短回合瀏覽器遊戲。你是一名在不穩定能量場中工作的 Courier：把散落的能量帶回中央 Relay，決定要安全地少量運送，還是多帶一些換取更高分數倍率，同時躲開越來越密集的敵方無人機。
 
-**v1.2.0 的目標：維持 4 分鐘短回合核心，同時加入兩種難度、衝刺撞擊的二段衝擊波，以及真正會隨手機直向／橫向重算視野的 Mobile Arena。**
+**v1.2.1 的目標：改善手機 Safari 可視區與全螢幕體驗，降低選完天賦後瞬間受傷的風險，新增緊急修復，以及讓下一次天賦觸發進度可直接看見。**
 
 ## 🎮 線上遊玩
 
@@ -25,7 +25,7 @@ GitHub Pages 啟用後，直接點上面的連結就能在瀏覽器玩，不需�
 
 ### 直接開啟
 
-也可以直接雙擊根目錄的 `index.html`。本專案刻意使用一般 JavaScript classic script，而不是需要 HTTP 環境的 ES Module，因此支援直接從本機檔案開啟。瀏覽器 runtime 依序拆成 6 個可讀的 script 檔，只是為了可靠傳輸與維護，遊戲仍視為同一個 runtime。
+也可以直接雙擊根目錄的 `index.html`。本專案刻意使用一般 JavaScript classic script，而不是需要 HTTP 環境的 ES Module，因此支援直接從本機檔案開啟。瀏覽器 runtime 以 6 個基礎 script 加上 v1.2.1 的 3 個小型增量 script 組成，刻意控制單檔大小以利可靠傳輸與維護；遊戲仍視為同一個 runtime。
 
 建議瀏覽器：最新版 Microsoft Edge、Google Chrome 或 Firefox。
 
@@ -44,7 +44,9 @@ python -m http.server 8000
 
 手機版不需要外接鍵盤。左側使用 360° 虛擬搖桿：拖動方向決定移動方向，拖動距離決定移動強度；放手後搖桿會自動回中並停止移動。右側保留「衝刺」與「脈衝」，支援多點觸控，因此可以推住搖桿的同時使用能力。暫停、升級與結算視窗也會自動縮成手機可操作尺寸。
 
-直向與橫向都能玩。v1.2 不再把固定 16:10 畫面硬縮到手機：直向會使用較高的戰場與更大的 HUD／搖桿／能力鍵；橫向則會把邏輯 Arena 擴寬，真正顯示更多左右遊戲世界。旋轉手機時會重新計算 Canvas、Arena 寬度與控制位置，不需要重新整理或重新開始任務。
+直向與橫向都能玩。v1.2 不再把固定 16:10 畫面硬縮到手機：直向會使用較高的戰場與更大的 HUD／搖桿／能力鍵；橫向則會把邏輯 Arena 擴寬，真正顯示更多左右遊戲世界。v1.2.1 進一步改用 `visualViewport` 的實際可視高度，因此 Safari 網址列展開／收合或手機旋轉時，遊戲會重新計算可用高度，不再要求往下滑才能找到控制器。
+
+右上角新增 **全螢幕** 按鈕。支援 Fullscreen API 的瀏覽器會直接進入／離開全螢幕；iPhone Safari 若不開放網頁全螢幕，遊戲只會在頁面底部顯示非阻塞式提示，不會跳出 modal／alert 或暫停遊戲。提示會建議使用「分享 → 加入主畫面」；從主畫面啟動後會以 standalone Web App 模式執行，減少網址列與分頁列佔用的空間。
 
 ## 完全沒玩過這類遊戲？
 
@@ -68,6 +70,7 @@ python -m http.server 8000
 | Pulse | `E` | 能量滿時清除附近敵人 |
 | 暫停 / 繼續 | `P` 或 `ESC` | 暫停任務計時與敵人 |
 | 音效 | 右上角 `♪` | 開啟 / 關閉遊戲音效 |
+| 全螢幕 | 右上角 `⛶` | 支援時直接全螢幕；iPhone Safari 不支援時顯示加入主畫面指引 |
 
 ## 難度
 
@@ -110,9 +113,25 @@ python -m http.server 8000
 - 廣域脈衝：脈衝範圍 +22%。
 - 高效電容：脈衝充能速度 +20%。
 - 衝刺撞擊：第一次取得後，Dash 撞到敵人會直接擊破並得分；Dash 結束時會再釋放一圈衝擊波，把周圍敵人向外推。若敵群太密、推完仍留在核心區，會被爆炸餘波清除，但這些餘波擊殺 **不會得到分數**。再次取得會提升撞擊爆破、衝擊波範圍／推力與直接擊殺分數。
+- **緊急修復**：立即恢復 2 格 HULL，不增加最大血量；不會超過目前最大 HULL。滿血時仍可能出現但權重很低，血量越危急越容易抽到。
 
 每一局抽到的組合不同，因此可以走速度、容量、生存、Pulse 或衝刺撞擊等不同方向。衝刺撞擊未取得前，Dash 只提供高速移動與短暫無敵，不會消滅敵人。
 
+### 天賦充能進度
+
+正式任務中會顯示 `NEXT UPGRADE` 進度條，直接反映真正的天賦觸發值。每一次升級都使用自己的分段門檻（16 → 38 → 72 → 118 → 180），例如第一段 11 分會顯示 `11 / 16`；完成第一次升級後若總進度來到 27，第二段會顯示 `11 / 22`。達到 80% 以上時進度條會亮黃提示，五次升級全部完成後顯示 `UPGRADES MAX`。普通模式也顯示未折扣的真正升級進度，因此不會再出現「畫面分數看起來不夠卻突然跳天賦」的情況。
+
+每次選完任意天賦後，Courier 會進入 **1.5 秒藍白閃爍無敵保護期**，期間碰撞不扣 HULL；同時會出現一圈小型 Cyan 保護環。
+
+## v1.2.1 調整
+
+- 手機版改用 `visualViewport` 的實際可視高度，Safari 網址列與分頁列造成的可用高度變化會即時重算。
+- 手機控制器改為覆蓋在 Arena 內，不再依賴額外的頁面下方空間，直向不用往下滑才能操作。
+- 新增全螢幕按鈕；支援 Fullscreen API 時直接切換，不支援時改用不遮住遊戲、不暫停操作的頁面內提示，提供 iPhone「加入主畫面」standalone 指引。
+- 新增 Web App Manifest，主畫面啟動可使用 standalone 顯示模式。
+- 新增「緊急修復」天賦：立即恢復 2 HULL、不增加最大 HULL，低血量時提高抽選權重。
+- 所有天賦選完後新增 1.5 秒閃爍無敵保護期。
+- 新增分段式 `NEXT UPGRADE` 天賦充能進度條，80% 以上發亮，全部五次完成後顯示 `UPGRADES MAX`。
 
 ## v1.2.0 調整
 
@@ -145,6 +164,8 @@ python -m http.server 8000
 ├─ index.html                  # 遊戲頁面、HUD、選單與 Overlay
 ├─ styles.css                 # 基礎 Neon UI 與響應式版面
 ├─ mobile-v120.css            # v1.2 手機放大 UI、動態 Arena 與橫向版面
+├─ mobile-v121.css            # v1.2.1 Safari 可視區、全螢幕、控制覆蓋與天賦進度 HUD
+├─ manifest.webmanifest       # 手機加入主畫面的 standalone Web App 設定
 ├─ PLAY.bat                   # Windows 一鍵開啟
 ├─ src/
 │  ├─ game-core.js            # 可測試的純遊戲規則 / 數學
@@ -153,12 +174,18 @@ python -m http.server 8000
 │  ├─ game-03.js              # Runtime 第 3 段
 │  ├─ game-04.js              # Runtime 第 4 段
 │  ├─ game-05.js              # Runtime 第 5 段：HUD、儲存與啟動
-│  └─ game-06.js              # Runtime 第 6 段：難度、衝擊波與動態 Arena
+│  ├─ game-06.js              # Runtime 第 6 段：難度、衝擊波與動態 Arena
+│  ├─ game-v121-core.js       # v1.2.1 純規則：回血、保護期、viewport 與進度計算
+│  ├─ game-07.js              # v1.2.1：緊急修復、保護期、全螢幕與 visualViewport
+│  └─ game-08.js              # v1.2.1：天賦充能進度 HUD
 ├─ tests/
 │  ├─ game-core.test.js       # 核心規則測試
 │  ├─ static-shell.test.js    # DOM / 啟動結構測試
 │  ├─ release-files.test.js   # Release 完整性測試
-│  └─ browser-smoke.js        # Chromium 真實互動 Smoke Test
+│  ├─ browser-smoke.js        # Chromium 真實互動 Smoke Test
+│  ├─ v121-core.test.js       # v1.2.1 純規則測試
+│  ├─ v121-runtime.test.js    # v1.2.1 runtime 狀態整合測試
+│  └─ v121-static.test.js     # v1.2.1 DOM / PWA / CSS 結構測試
 └─ docs/superpowers/          # v1 設計與實作計畫
 ```
 
@@ -167,7 +194,7 @@ python -m http.server 8000
 核心與 release 測試不需要 npm install。需要 Node.js 18+，在 repository 根目錄執行：
 
 ```bash
-node --test tests/game-core.test.js tests/static-shell.test.js tests/release-files.test.js
+node --test tests/game-core.test.js tests/static-shell.test.js tests/release-files.test.js tests/v121-core.test.js tests/v121-runtime.test.js tests/v121-static.test.js
 ```
 
 Chromium 互動 Smoke Test：
@@ -192,7 +219,9 @@ Smoke Test 會驗證：
 - 直向 → 橫向 → 直向旋轉不重開任務且會重新計算 Arena。
 - 瀏覽器執行期間沒有 JavaScript exception。
 
-## v1.2.0 內容範圍
+v1.2.1 另外提供 `v121-core.test.js`、`v121-runtime.test.js`、`v121-static.test.js`，驗證天賦後 1.5 秒無敵、緊急修復 +2 HULL、Safari `visualViewport` 高度、非阻塞式全螢幕 fallback、公開 API 延後整合，以及天賦進度 HUD。
+
+## v1.2.1 內容範圍
 
 目前第一版是單機、鍵盤操作、單一競技場的完整短回合遊戲。沒有帳號、排行榜伺服器、多人連線、付費、分析追蹤或外部素材。所有畫面以 Canvas/CSS 繪製，音效由 WebAudio 即時產生。
 

@@ -1,0 +1,11 @@
+{
+  "name": "Pulse Courier: Neon Run",
+  "short_name": "Pulse Courier",
+  "description": "Neon risk/reward survival courier game.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#070b18",
+  "theme_color": "#070b18"
+}
