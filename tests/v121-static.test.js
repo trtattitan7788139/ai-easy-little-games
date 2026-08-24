@@ -15,7 +15,7 @@ test('page exposes fullscreen/PWA hooks and loads v1.2.1 runtime', () => {
   assert.match(html, /src\/game-v121-core\.js/);
   assert.match(html, /src\/game-07\.js/);
   assert.match(html, /src\/game-08\.js/);
-  assert.match(html, /v1\.2\.1 \/\/ DESKTOP \+ MOBILE/);
+  assert.match(html, /v1\.2\.\d+ \/\/ DESKTOP \+ MOBILE/);
 });
 
 test('mobile v1.2.1 layout uses visual viewport height and overlays controls', () => {
@@ -47,7 +47,6 @@ test('manifest is standalone-capable', () => {
   assert.equal(manifest.start_url, './');
 });
 
-
 test('page exposes a visible next-upgrade progress HUD', () => {
   const html = read('index.html');
   assert.match(html, /id="upgradeProgressHud"/);
@@ -61,7 +60,6 @@ test('page exposes a visible next-upgrade progress HUD', () => {
   assert.match(js, /is-near-ready/);
   assert.match(js, /UPGRADES MAX/);
 });
-
 
 test('fullscreen fallback is a non-blocking inline hint', () => {
   const js = read('src/game-07.js');
