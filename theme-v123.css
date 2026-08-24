@@ -1,0 +1,97 @@
+/* v1.2.3 clearer glass controls + localized health terminology */
+
+.icon-button {
+  background: rgba(12, 19, 38, .42);
+  border-color: rgba(194, 222, 238, .34);
+  backdrop-filter: blur(7px) saturate(1.08);
+  -webkit-backdrop-filter: blur(7px) saturate(1.08);
+}
+.icon-button:hover {
+  background: rgba(20, 42, 66, .50);
+  border-color: rgba(122, 238, 255, .70);
+}
+
+.primary-button {
+  background: linear-gradient(110deg, rgba(18, 154, 188, .34), rgba(17, 66, 105, .38));
+  backdrop-filter: blur(7px) saturate(1.08);
+  -webkit-backdrop-filter: blur(7px) saturate(1.08);
+}
+.primary-button:hover {
+  background: linear-gradient(110deg, rgba(24, 181, 214, .42), rgba(22, 89, 133, .46));
+}
+
+.secondary-button {
+  background: linear-gradient(110deg, rgba(70, 48, 126, .36), rgba(36, 29, 78, .40));
+  backdrop-filter: blur(7px) saturate(1.08);
+  -webkit-backdrop-filter: blur(7px) saturate(1.08);
+}
+.secondary-button:hover {
+  background: linear-gradient(110deg, rgba(91, 67, 154, .44), rgba(52, 39, 102, .48));
+}
+
+#normalButton.secondary-button {
+  background: linear-gradient(115deg, rgba(255, 103, 31, .64), rgba(201, 74, 16, .68));
+  border-color: rgba(255, 139, 78, .92);
+  box-shadow: inset 0 0 24px rgba(255,255,255,.07), 0 9px 26px rgba(255,103,31,.10);
+}
+#normalButton.secondary-button:hover {
+  background: linear-gradient(115deg, rgba(255, 138, 76, .72), rgba(255, 103, 31, .70));
+}
+#normalButton.secondary-button:active {
+  background: rgba(201, 74, 16, .76);
+}
+
+#tutorialButton.secondary-button {
+  background: linear-gradient(110deg, rgba(92, 68, 167, .42), rgba(48, 37, 103, .46));
+}
+
+.ghost-button {
+  background: rgba(255,255,255,.018);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.ghost-button:hover { background: rgba(255,255,255,.055); }
+
+.touch-button,
+.mobile-action {
+  background: rgba(8, 14, 30, .44);
+  border-color: rgba(173, 226, 241, .40);
+  backdrop-filter: blur(7px) saturate(1.08);
+  -webkit-backdrop-filter: blur(7px) saturate(1.08);
+}
+.touch-button:active,
+.touch-button.is-pressed,
+.mobile-action:active {
+  background: rgba(18, 64, 88, .56);
+  border-color: rgba(102, 239, 255, .90);
+}
+
+.fullscreen-hint-close,
+.tutorial-finish {
+  background: rgba(255,255,255,.035);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.upgrade-choice {
+  background: linear-gradient(160deg, rgba(24, 42, 73, .72), rgba(12, 24, 48, .70));
+  backdrop-filter: blur(8px) saturate(1.06);
+  -webkit-backdrop-filter: blur(8px) saturate(1.06);
+}
+.upgrade-choice:hover,
+.upgrade-choice:focus-visible {
+  background: linear-gradient(160deg, rgba(31, 57, 92, .82), rgba(16, 33, 61, .80));
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .icon-button,
+  .primary-button,
+  .secondary-button,
+  .ghost-button,
+  .touch-button,
+  .mobile-action,
+  .upgrade-choice {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
