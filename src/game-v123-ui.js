@@ -28,14 +28,27 @@
     document.head.appendChild(link);
   }
 
-  function patchVisibleVersionV126() {
-    const footerVersion = document.querySelector('.footer-note span:first-child');
-    if (footerVersion) footerVersion.textContent = 'v1.2.6 // DESKTOP + MOBILE';
+  function ensureScript(src, onload) {
+    const existing = document.querySelector(`script[src="${src}"]`);
+    if (existing) {
+      if (typeof onload === 'function') onload();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = src;
+    script.async = false;
+    if (typeof onload === 'function') script.addEventListener('load', onload, { once: true });
+    document.body.appendChild(script);
   }
 
-  function patchPublicApiV126() {
-    if (!window.PulseCourier || window.PulseCourier.version === '1.2.6') return Boolean(window.PulseCourier);
-    window.PulseCourier = Object.freeze({ ...window.PulseCourier, version: '1.2.6' });
+  function patchVisibleVersionV127() {
+    const footerVersion = document.querySelector('.footer-note span:first-child');
+    if (footerVersion) footerVersion.textContent = 'v1.2.7 // DESKTOP + MOBILE';
+  }
+
+  function patchPublicApiV127() {
+    if (!window.PulseCourier || window.PulseCourier.version === '1.2.7') return Boolean(window.PulseCourier);
+    window.PulseCourier = Object.freeze({ ...window.PulseCourier, version: '1.2.7' });
     return true;
   }
 
@@ -43,6 +56,7 @@
   ensureTheme('theme-v124.css');
   ensureTheme('theme-v125.css');
   ensureTheme('theme-v126.css');
-  patchVisibleVersionV126();
-  if (!patchPublicApiV126()) document.addEventListener('DOMContentLoaded', patchPublicApiV126, { once: true });
+  ensureScript('src/game-v127-core.js', () => ensureScript('src/game-v127.js'));
+  patchVisibleVersionV127();
+  if (!patchPublicApiV127()) document.addEventListener('DOMContentLoaded', patchPublicApiV127, { once: true });
 })();
